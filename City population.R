@@ -47,11 +47,4 @@ dd <- read.csv("CA.csv")
 
 set.seed(123)
 ee <- sample_n(dd,10000)
-TMC<- ggplot( #Still need edit to make the things fatter
-  data= dd, aes(x = TMC)) + geom_bar(stat = "count",width = 0.5, color = "blue", fill = "blue") + ggtitle("TMC")
-)
-
-Severity<- ggplot(
-  data= dd, aes(x = Severity)) + geom_bar(stat = "count",width = 0.5, color = "blue", fill = "blue") + ggtitle("Severity")
-)
 
