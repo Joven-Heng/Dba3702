@@ -1,0 +1,170 @@
+---
+title: "Project"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+
+CA <- read.csv("CA.csv")
+
+head(CA,10)
+
+dim(CA)
+colnames(CA)
+
+
+
+```
+
+
+```{r}
+
+a1 <- CA %>% group_by(TMC) %>% summarise(count = n())
+a1
+
+plot <- ggplot(data = a1) + geom_bar(aes(x = reorder(TMC, -count),y = count), stat = "identity") # + theme(axis.text.x = element_text(angle = 90))
+
+plot
+
+```
+
+
+```{r}
+a2 <- CA %>% group_by(Severity) %>% summarise(count = n())
+a2
+
+plot1 <- ggplot(data = CA) + geom_bar(aes(x = Severity, y = ..count..)) 
+plot1
+
+plot2 <- ggplot(data = a2) + geom_bar(aes(x = "", y = count, fill=Severity), stat = "identity") + coord_polar("y", start=0)
+plot2
+
+```
+
+
+```{r}
+head(CA,15)
+a <- substr( CA[1,"Start_Time"] ,12,19)
+a
+format(strptime(a,"%H:%M:%S"),'%H')
+
+a3 <- CA %>% mutate(hour = format(strptime(substr(Start_Time,12,19),"%H:%M:%S"),'%H'))
+a3
+
+plot <- ggplot(data = a3) + geom_bar(aes(x = hour ,y = ..count..)) # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+head(CA)
+
+a4 <- CA %>% group_by(day, ph) %>% summarise(count = n())
+a4
+
+plot <- ggplot(data = a4) + geom_bar(aes(x = day ,y = count, fill = ph), stat="identity") # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+
+head(CA$date,15)
+
+a5 <- CA %>% mutate(month = substr(date,6,7))
+a5 <- a5 %>% group_by(month, Severity) %>% summarise(count = n())
+a5
+
+
+plot <- ggplot(data = a5) + geom_bar(aes(x = month ,y = count, fill = Severity ), stat = "identity") # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+plot <- ggplot(data = CA) + geom_bar(aes(x = Bump ,y = ..count..)) # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+
+plot <- ggplot(data = CA) + geom_bar(aes(x = Stop ,y = ..count..)) # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+plot <- ggplot(data = CA) + geom_bar(aes(x = Give_Way ,y = ..count..)) # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+plot <- ggplot(data = CA) + geom_bar(aes(x = No_Exit ,y = ..count..)) # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+plot <- ggplot(data = CA) + geom_bar(aes(x = Traffic_Signal ,y = ..count..)) # + theme(axis.text.x = element_text(angle = 90))
+plot
+
+```
+
+
+```{r}
+
+a6 <- CA %>% group_by(Visibility.mi.) %>% summarise(count =n())
+a6
+
+plot <- ggplot(data = a6) + geom_density(aes(x = Visibility.mi. ,y = count), stat="identity") +scale_x_continuous(limits = c(0,15))
+plot
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
