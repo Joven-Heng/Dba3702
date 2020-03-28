@@ -3,9 +3,9 @@ library(dplyr)
 library(htmlwidgets)
 
 df <- read.csv("CA.csv")
-sam.df <- sample_n(df, 60000)
+df$Severity <- as.character(df$Severity)
 
-severity.list <- c(1, 2, 3, 4)
+severity.list <- c("1", "2", "3", "4")
 factPal <- colorFactor(c("green", "yellow", "orange", "red"), severity.list, ordered = T)
 
 m <- leaflet() %>%
@@ -13,7 +13,7 @@ m <- leaflet() %>%
   addTiles()
 
 for (i in 1:4) {
-  severity.level <- sam.df[sam.df$Severity == severity.list[i],]
+  severity.level <- df[df$Severity == severity.list[i],]
   
   m <- addCircleMarkers(m,
                         data = severity.level,
@@ -30,5 +30,3 @@ m <- addLayersControl(m, overlayGroups = severity.list)
 m
 
 saveWidget(m, "heatmap.html")
-
-# layer control not working, need to refine code
