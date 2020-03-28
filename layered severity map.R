@@ -4,6 +4,7 @@ library(htmlwidgets)
 
 df <- read.csv("CA.csv")
 df$Severity <- as.character(df$Severity)
+sample.df <- sample_n(df, 60000)
 
 severity.list <- c("1", "2", "3", "4")
 factPal <- colorFactor(c("green", "yellow", "orange", "red"), severity.list, ordered = T)
@@ -13,7 +14,7 @@ m <- leaflet() %>%
   addTiles()
 
 for (i in 1:4) {
-  severity.level <- df[df$Severity == severity.list[i],]
+  severity.level <- sample.df[sample.df$Severity == severity.list[i],]
   
   m <- addCircleMarkers(m,
                         data = severity.level,
