@@ -13,4 +13,4 @@ m <- leaflet() %>%
 
 m
 
-saveWidget(m, file = "clusters.html")
+saveWidget(m, file = "heatmap.html")
