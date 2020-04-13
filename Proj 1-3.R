@@ -177,7 +177,7 @@ body <- dashboardBody(
             fluidRow(
               tabBox(
                 title = "Map of all the problems in the county",
-                id = "tabset1",
+                id = "tabset1",width = "500px",
                 tabPanel("Severity Map", leafletOutput("severitymap")),
                 tabPanel("HeatMap", leafletOutput("clusteredmap"))
               )
