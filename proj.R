@@ -3,9 +3,14 @@ library(shiny)
 library(shinydashboard)
 library(dplyr)
 library(ggplot2)
+library(leaflet)
+library(htmlwidgets)
+library(tibble)
+library(leaflet.extras)
 
 #only load once
-#CA <- read.csv("CA.csv")
+CA <- read.csv("CA.csv")
+CA <- CA %>% mutate(hour = substr(Start_Time,12,13), month = substr(date,6,7))
 
 data1 <- CA %>% group_by(County) %>% summarise(count=n())
 
@@ -25,8 +30,46 @@ data1 <- left_join(data1,county.veh[,c("COUNTIES","TOTAL")], by=c("County"="COUN
 data1 <- data1 %>% mutate(veh.rate = count*1000/TOTAL)
 colnames(data1) <- c("County", "no.accidents", "total.pop", "pop.rate", "total.veh", "veh.rate")
 
+#Cleaning weather types
+w1 <- "Clear"
+w2 <- "Cloudy"
+w3 <- "haze/fog"
+w4 <- "drizzle"
+w5 <- "Rain"
+w6 <- "Snow"
+w7 <- "Hail"
+specificweatherlist <- c(w1,w2,w3,
+                         w2,w2,w2, #6
+                         w4,NA,w1,#9
+                         w3,w3,w3,#12
+                         w5,w4,w5,#15
+                         w3,w6,w6,#18
+                         w3,w3,w5,#21
+                         w4,w5,w1,#24
+                         w2,w3,w3,
+                         w4,w3,w3,#30
+                         w1,w5,w1,
+                         w4,w7,w4,
+                         w5,w5,w3,
+                         w5,w2,w2,#42
+                         w5,w5,w5,
+                         w5,w5,w6,#48
+                         w6,w2,w4,#51
+                         w5,w1,w3,
+                         w3,w1,w6,#57
+                         w6,w5,w3,#60
+                         w3,w5,w3,
+                         w5,w6,w1,
+                         w3)
+weathertypes = unique(CA$Weather_Condition)
+indexes <- match(CA$Weather_Condition,weathertypes)
+newweatherlist <- specificweatherlist[indexes]
+CA <- add_column(CA, Weather_Type =newweatherlist, .after = "Weather_Condition")
 
-County <- unique(CA$County)
+#leaflet
+colors <- c("green", "yellow", "orange", "red")
+severity <- c("1", "2", "3", "4")
+m <- leaflet() %>% addTiles()
 
 header <- dashboardHeader(title = "US Accidents")
 
@@ -34,9 +77,7 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     #Tab 1 
     menuItem(tabName = "visualization", "Visualization", icon = icon("globe-americas"),
-             selectInput(inputId = "county", label = "County", choices = County),
-             checkboxGroupInput(inputId = "severity", label = "Severity", choices = c("1","2","3","4")),
-             radioButtons(inputId = "display", label = "Display", choices = c("Heatmap","Cluster Distribution"))
+             selectInput(inputId = "county", label = "County", choices = unique(CA$County))
     ),
     
     #Tab 2
@@ -57,16 +98,17 @@ body <- dashboardBody(
   fluidRow(
     box(plotOutput("plot1"), width=12)
   ),
-
   
   fluidRow(
-    valueBoxOutput("county", width=12)
+    box(plotOutput("plot2"), width=6),
+    box(plotOutput("plot3"), width=6)
   ),
 
   tabItems(
     #Tab 1 content
-    tabItem(tabName="visualisation",class='active', 
+    tabItem(tabName="visualisation", class="active",
             
+            fluidRow(valueBoxOutput("county", width=12)),
             
             fluidRow(
               infoBoxOutput("no.accidents"),
@@ -77,13 +119,45 @@ body <- dashboardBody(
             fluidRow(
               infoBoxOutput("popaccidentrate", width=6),
               infoBoxOutput("vehaccidentrate", width=6)
-            )
+            ),
             
+            fluidRow(
+              tabBox(
+                title = "Leaflet",
+                id = "leaflet",
+                width = 10,
+                height = 500,
+                tabPanel("Severity Map", leafletOutput("severitymap" , height = 500)),
+                tabPanel("HeatMap", leafletOutput("heatmap", height = 500))
+              )
+            )
     ),
     
-    tabItem(tabName="Variables",class='active',
-            box("a")
+    
+    #Tab 2 content
+    tabItem(tabName="Variables", class="active",
+            
+            fluidRow(
+              br(),
+              br(),
+              br(),
+              box(plotOutput("weathertype_accident"), title = "Weather Conditions"),
+              box(plotOutput("road_safety"), title = "Presense of bumps etc")
+            ),
+            
+            fluidRow(
+              tabBox(
+                title = "Time series",
+                id = "time",
+                width = 10,
+                height = 500,
+                tabPanel("Hour", plotOutput("hour")),
+                tabPanel("Day", plotOutput("day")),
+                tabPanel("Month", plotOutput("month"))
+              )
             )
+              
+    )
   )
 )
 
@@ -92,6 +166,7 @@ ui <- dashboardPage(header, sidebar, body)
 
 server <- function(input, output, session) {
   
+  #overall bar graph by county
   output$plot1 <- renderPlot({
     ggplot(data=data1) +
       geom_bar(aes(x=reorder(County,-pop.rate), y=no.accidents), fill="black", alpha=0.5, stat="identity") +
@@ -100,6 +175,21 @@ server <- function(input, output, session) {
       theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) + 
       theme(axis.text.x=element_text(angle=90))
   })
+  
+  #bar chart for bumps,etc
+  output$plot2 <- renderPlot({
+    ggplot(data=CA) + 
+      geom_bar(aes(x="Bump",y=..count.., fill=Bump), width=.3) + 
+      geom_bar(aes(x="Stop",y=..count.., fill=Stop),width =.3) +
+      geom_bar(aes(x="Give_Way",y=..count.., fill=Give_Way), width=.3) + 
+      geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.3) +
+      geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3)
+  })
+  
+  output$plot3 <- renderPlot({
+    ggplot(data=CA) + geom_bar(aes(x="Severity" ,y=..count.., fill = as.character(Severity))) + coord_polar("y", start=0)
+  })
+  
   
   #County
   output$county <- renderValueBox({
@@ -131,7 +221,57 @@ server <- function(input, output, session) {
     infoBox("Vehicle Accident Rate", paste0(floor(data1[data1$County==input$county,"veh.rate"]),"/1000 vehicles"))
   })
   
-
+  #leaflet
+  output$severitymap <- renderLeaflet({
+    for (i in 1:4){
+      data <- CA[CA$County == input$county,]
+      data <- data[data$Severity  == severity[i],]
+      m <- m %>% addCircleMarkers(data = data, 
+                                  lng = ~Start_Lng, 
+                                  lat = ~Start_Lat, 
+                                  color = colors[i],
+                                  fillOpacity = 1,
+                                  group = severity[i],
+                                  radius = 0.5,
+                                  clusterOptions = markerClusterOptions())
+    }
+    m <- m %>% addLayersControl(overlayGroups = severity)
+    m
+  })
+  
+  #heatmap
+  output$heatmap <- renderLeaflet({
+    leaflet(data = CA[CA$County == input$county,]) %>% addTiles() %>% addWebGLHeatmap(lng= ~Start_Lng, lat= ~Start_Lat, size = 200)
+  })
+  
+  
+  #Weather boxplot
+  output$weathertype_accident <- renderPlot({
+    ggplot(CA[CA$County==input$county,], aes(x=Weather_Type, fill=as.character(Severity))) + geom_bar(position = "dodge")
+  })
+  
+  #road safety boxplot
+  output$road_safety <- renderPlot({
+    ggplot(data=CA[CA$County==input$county,]) + 
+      geom_bar(aes(x="Bump",y=..count.., fill=Bump), width=.3) + 
+      geom_bar(aes(x="Stop",y=..count.., fill=Stop),width =.3) +
+      geom_bar(aes(x="Give_Way",y=..count.., fill=Give_Way), width=.3) + 
+      geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.3) +
+      geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3)
+  })
+  
+  #Time Series plot
+  output$hour <- renderPlot({
+    ggplot(data=CA[CA$County==input$county,]) + geom_bar(aes(x = hour ,y = ..count..))
+  })
+  
+  output$day <- renderPlot({
+    ggplot(data=CA[CA$County==input$county,]) + geom_bar(aes(x = day ,y = ..count.., fill = as.character(ph)))
+  })
+  
+  output$month <- renderPlot({
+    ggplot(data=CA[CA$County==input$county,]) + geom_bar(aes(x = month ,y = ..count..))
+  })
   
 }
 
