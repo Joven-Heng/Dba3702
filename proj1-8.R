@@ -210,7 +210,9 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.3) +
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
       theme_economist_white() +
-      theme(axis.text.x = element_text(angle = 90))
+      theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
+      labs(title = "Road Conditions") +
+      scale_fill_discrete(name = "", labels = c("Present", "Not Present"))
   })
   
   # severity pie chart
@@ -333,7 +335,8 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.3) +
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
       theme_economist_white() + 
-      theme(axis.text.x = element_text(angle = 90))
+      theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
+      scale_fill_discrete(name = "", labels = c("Present", "Not Present"))
   })
   
   # time series plot
