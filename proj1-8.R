@@ -223,15 +223,15 @@ server <- function(input, output, session) {
   # severity pie chart
   output$plot3 <- renderPlot({
     # severity percentage
-    sev <- CA %>% group_by(Severity) %>% count() %>% arrange(desc(Severity))
-    sev$per <- sev$n/sum(sev$n)
-    sev$label <- percent(sev$per)
+   sev <- CA %>% group_by(Severity, year) %>% summarise(count = n())
+    sev <- spread(sev, year, count)
+    sev <- sev %>% mutate(all.years = `2016`+`2017`+`2018`+`2019`)
+    sev <- gather(sev,`2016`,`2017`,`2018`,`2019`,all.years, key = "year", value = "count")
+    by.year <- sev %>% group_by(year) %>% summarise(sum(count))
+    sev <- left_join(sev, total, by="year")
+    sev$per <- sev$count/sev$`sum(count)`
+    sev$label <- percent(sev$per, accuracy = 0.1)
     
-    #sev <- CA %>% group_by(Severity, year) %>% summarise(count = n())
-    #sev <- spread(sev, year, count)
-    #sev <- sev %>% mutate(all.years = `2016`+`2017`+`2018`+`2019`)
-    #sev<- gather(sev,`2016`,`2017`,`2018`,`2019`,all.years, key = "year", value = "count")
-
     ggplot(data=sev) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
