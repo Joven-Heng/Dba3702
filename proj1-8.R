@@ -398,7 +398,7 @@ server <- function(input, output, session) {
     ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
       geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
       geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
-      labs(x="Gender demographics", y="Population")
+      labs(x="Gender", y="Population")
   }})
   
 }
