@@ -115,8 +115,8 @@ body <- dashboardBody(
             ),
             
             fluidRow(
-              box(plotOutput("plot2"), width=6),
-              box(plotOutput("plot3"), width=6)
+              box(plotOutput("plot2"), width=8),
+              box(plotOutput("plot3"), width=4)
             )
     ),
     
@@ -224,13 +224,20 @@ server <- function(input, output, session) {
     #sev <- spread(sev, year, count)
     #sev <- sev %>% mutate(all.years = `2016`+`2017`+`2018`+`2019`)
     #sev<- gather(sev,`2016`,`2017`,`2018`,`2019`,all.years, key = "year", value = "count")
-    
+
     ggplot(data=sev) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
-      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=sev$label, nudge_x = 1) +
       labs(title = "Severity of Accidents by Percentage", fill = "Severity Level") +
-      theme_void()
+      theme_economist_white() +
+      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=sev$label, nudge_x = 1) +
+      theme(axis.line=element_blank(),
+            axis.text.x=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks=element_blank(),
+            axis.title.x=element_blank(),
+            axis.title.y=element_blank(),
+            panel.grid.major=element_blank())
   })
   
   
