@@ -228,19 +228,20 @@ server <- function(input, output, session) {
     # severity percentage
     sev <- CA %>% group_by(Severity, year) %>% summarise(count = n())
     sev <- spread(sev, year, count)
-    sev <- sev %>% mutate(all.years = `2016`+`2017`+`2018`+`2019`)
-    sev <- gather(sev,`2016`,`2017`,`2018`,`2019`,all.years, key = "year", value = "count")
+    sev <- sev %>% mutate(`2016-2019` = `2016`+`2017`+`2018`+`2019`)
+    sev <- gather(sev,`2016`,`2017`,`2018`,`2019`,`2016-2019`, key = "year", value = "count")
     by.year <- sev %>% group_by(year) %>% summarise(sum(count))
-    sev <- left_join(sev, total, by="year")
+    sev <- left_join(sev, by.year, by="year")
     sev$per <- sev$count/sev$`sum(count)`
     sev$label <- percent(sev$per, accuracy = 0.1)
     
-    ggplot(data=sev) +
+    data <- sev[sev$year == input$year,]
+    ggplot(data) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
       labs(title = "Severity of Accidents by Percentage", fill = "Severity Level") +
       theme_economist_white() +
-      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=sev$label, nudge_x = 1) +
+      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 1) +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
             axis.text.y=element_blank(),
