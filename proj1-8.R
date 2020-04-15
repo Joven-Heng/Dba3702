@@ -385,21 +385,19 @@ server <- function(input, output, session) {
   
   #Age group demographic
   output$age_groups <- renderPlot({
-    if (input$year == "2016-2019"){
-    ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
-      geom_bar(stat="identity") +
-      labs(x = "Age group", y= "Population") + 
-      theme(legend.position = "none")
-  }})
+      ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
+        geom_bar(stat="identity") +
+        labs(x = "Age group", y= "Population") + 
+        theme(legend.position = "none")
+    })
   
   #Gender demographics
   output$gender <- renderPlot({
-    if (input$year == "2016-2019"){
-    ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
-      geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
-      geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
-      labs(x="Gender", y="Population")
-  }})
+      ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
+        geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
+        geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
+        labs(x="Gender", y="Population")
+    })
   
 }
 
