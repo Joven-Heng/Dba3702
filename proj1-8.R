@@ -188,7 +188,7 @@ server <- function(input, output, session) {
   
   #overall bar graph by county
   output$plot1 <- renderPlot({
-    ggplot(data=data1) +
+    ggplot(data1[data1$year == input$year,]) +
       geom_bar(aes(x=reorder(County,-pop.rate), y=no.accidents), fill="black", alpha=0.5, stat="identity") +
       geom_line(aes(x=reorder(County,-pop.rate), y=pop.rate*5000, color="Accidents per 1000 people"), group=1, stat="identity") +
       geom_line(aes(x=reorder(County,-pop.rate), y=veh.rate*5000, color="Accidents per 1000 vehicles"), group=1, stat="identity") +
