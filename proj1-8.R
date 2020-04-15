@@ -1,4 +1,3 @@
-
 library(shiny)
 library(shinydashboard)
 library(dplyr)
@@ -76,8 +75,11 @@ CA <- add_column(CA, Weather_Type = newweatherlist, .after = "Weather_Condition"
 
 # leaflet
 colors <- c("green", "yellow", "orange", "red")
+
 severity <- c("1", "2", "3", "4")
+factPal <- colorFactor(c("green", "yellow", "orange", "red"), severity, ordered = T)
 m <- leaflet() %>% addTiles()
+n <- leaflet() %>% addTiles()
 
 #data with demographics
 data2 <- left_join(cal.county.pop, data1, by = c("CTYNAME" = "County"))
@@ -146,8 +148,9 @@ body <- dashboardBody(
                 id = "leaflet",
                 width = 12,
                 height = 500,
-                tabPanel("Cluster Severity Map", leafletOutput("severitymap" , height = 500)),
-                tabPanel("Heat Map", leafletOutput("heatmap", height = 500))
+                tabPanel("Cluster Map", leafletOutput("severitymap" , height = 500)),
+                tabPanel("Heat Map", leafletOutput("heatmap", height = 500)),
+                tabPanel("Severity Map", leafletOutput("severitymap2", height = 500))
               )
             ),
             
@@ -223,7 +226,7 @@ server <- function(input, output, session) {
   # severity pie chart
   output$plot3 <- renderPlot({
     # severity percentage
-   sev <- CA %>% group_by(Severity, year) %>% summarise(count = n())
+    sev <- CA %>% group_by(Severity, year) %>% summarise(count = n())
     sev <- spread(sev, year, count)
     sev <- sev %>% mutate(all.years = `2016`+`2017`+`2018`+`2019`)
     sev <- gather(sev,`2016`,`2017`,`2018`,`2019`,all.years, key = "year", value = "count")
@@ -311,6 +314,33 @@ server <- function(input, output, session) {
     leaflet(data = data[data$County == input$county,]) %>% addTiles() %>% addWebGLHeatmap(lng= ~Start_Lng, lat= ~Start_Lat, size = 200)
   })
   
+  ##Leaflet2
+  output$severitymap2 <- renderLeaflet({
+  for (i in 1:4) {
+    if (input$year != "2016-2019"){
+      data <- CA[CA$year == input$year,]
+    }else{
+      data <- CA
+    }
+    data <- data[data$County == input$county,]
+    data <- data[data$Severity  == severity[i],]
+    severity.level <- data[data$Severity == severity[i],]
+    
+    n <- addCircleMarkers(n,
+                                   data = severity.level,
+                                   lng = ~Start_Lng,
+                                   lat = ~Start_Lat, 
+                                   popup = ~Street,
+                                   radius = 0.5,
+                                   fillOpacity = 1,
+                                   color = factPal(severity.level$Severity),
+                                   group = severity[i])
+  }
+  
+  n <- n %>% addLayersControl(n, overlayGroups = severity)
+  n
+  })
+  
   
   # weather boxplot
   output$weathertype_accident <- renderPlot({
@@ -385,21 +415,20 @@ server <- function(input, output, session) {
   
   #Age group demographic
   output$age_groups <- renderPlot({
-      ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
-        geom_bar(stat="identity") +
-        labs(x = "Age group", y= "Population") + 
-        theme(legend.position = "none")
-    })
+    ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
+      geom_bar(stat="identity") +
+      labs(x = "Age group", y= "Population") + 
+      theme(legend.position = "none")
+  })
   
   #Gender demographics
   output$gender <- renderPlot({
-      ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
-        geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
-        geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
-        labs(x="Gender", y="Population")
-    })
+    ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
+      geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
+      geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
+      labs(x="Gender", y="Population")
+  })
   
 }
 
 shinyApp(ui, server)
-
