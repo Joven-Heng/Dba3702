@@ -185,15 +185,17 @@ server <- function(input, output, session) {
   
   #overall bar graph by county
   output$plot1 <- renderPlot({
-    ggplot(data1[data1$year == input$year,]) +
+    ggplot(data=data1) +
       geom_bar(aes(x=reorder(County,-pop.rate), y=no.accidents), fill="black", alpha=0.5, stat="identity") +
-      geom_line(aes(x=reorder(County,-pop.rate), y=pop.rate*5000, color="Population"), group=1, stat="identity") +
-      geom_line(aes(x=reorder(County,-pop.rate), y=veh.rate*5000, color="Vehicle"), group=1, stat="identity") +
-      scale_y_continuous(sec.axis=sec_axis(~./5000, name="Accident Rate", labels=function(x) {paste0(x,"%")})) +
-      labs(title = "Accident Frequency By County (2016-2018)", x="County", y="Number of Accidents") +
-      scale_colour_manual(values=c("Population"="red", "Vehicle"="blue"), labels = c("Population", "Vehicle"), name="Type") +
+      geom_line(aes(x=reorder(County,-pop.rate), y=pop.rate*5000, color="Accidents per 1000 people"), group=1, stat="identity") +
+      geom_line(aes(x=reorder(County,-pop.rate), y=veh.rate*5000, color="Accidents per 1000 vehicles"), group=1, stat="identity") +
+      scale_y_continuous(sec.axis=sec_axis(~./50000, name="Accident Rate", labels=function(x) {paste0(x,"%")})) +
+      labs(title = "Accident Frequency By County (paste the year here)", x="County", y="Number of Accidents") +
+      scale_colour_manual(values=c("Accidents per 1000 people"="red", "Accidents per 1000 vehicles"="blue"), 
+                          labels = c("Accidents per 1000 people", "Accidents per 1000 vehicles"), name="Legend:") +
       theme_economist_white() +
-      theme(axis.text.x=element_text(angle=90))
+      theme(axis.text.x=element_text(angle=90), axis.title.y.left = element_text(size = 12),axis.title.y.right = element_text(size = 12),plot.title = element_text(size = 25, hjust = 0.5), 
+            legend.text = element_text(size = 16), legend.title = element_text(size = 16))
   })
   
   # bar chart for bumps,etc
