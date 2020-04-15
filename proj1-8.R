@@ -9,6 +9,7 @@ library(leaflet.extras)
 library(scales)
 library(ggthemes)
 library(ggrepel)
+library(gridExtra)
 
 # only load once
 #CA <- read.csv("CA.csv")
@@ -179,10 +180,10 @@ body <- dashboardBody(
             
             #demographics
             fluidRow(
-              box(plotOutput("age_groups"), title = "Age groups"),
-              box(plotOutput("gender"), title = "Gender demographics")
+              box(plotOutput("Demographics"), title = "Demographics",
+                  width = 12,
+                  height = 500)
             )
-            
     )
   )
 )
@@ -431,20 +432,21 @@ server <- function(input, output, session) {
       theme_economist_white()
   })
   
-  #Age group demographic
-  output$age_groups <- renderPlot({
-    ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
+  #Demographics plot (Age and gender)
+  output$Demographics <- renderPlot({
+    age_groups_plot <- 
+      ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
       geom_bar(stat="identity") +
       labs(x = "Age group", y= "Population") + 
       theme(legend.position = "none")
-  })
-  
-  #Gender demographics
-  output$gender <- renderPlot({
-    ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
+    
+    gender_plot <- 
+      ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
       geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
       geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
       labs(x="Gender", y="Population")
+    
+    grid.arrange(age_groups_plot, gender_plot, ncol=2)
   })
   
 }
