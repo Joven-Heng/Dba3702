@@ -193,7 +193,7 @@ server <- function(input, output, session) {
       geom_line(aes(x=reorder(County,-pop.rate), y=pop.rate*5000, color="Accidents per 1000 people"), group=1, stat="identity") +
       geom_line(aes(x=reorder(County,-pop.rate), y=veh.rate*5000, color="Accidents per 1000 vehicles"), group=1, stat="identity") +
       scale_y_continuous(sec.axis=sec_axis(~./50000, name="Accident Rate", labels=function(x) {paste0(x,"%")})) +
-      labs(title = "Accident Frequency By County (paste the year here)", x="County", y="Number of Accidents") +
+      labs(title = paste("Accident Frequency By County", input$year), x="County", y="Number of Accidents") +
       scale_colour_manual(values=c("Accidents per 1000 people"="red", "Accidents per 1000 vehicles"="blue"), 
                           labels = c("Accidents per 1000 people", "Accidents per 1000 vehicles"), name="Legend:") +
       theme_economist_white() +
@@ -215,7 +215,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.3) +
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
       theme_economist_white() +
-      theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
+      theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
       labs(title = "Road Conditions") +
       scale_fill_discrete(name = "", labels = c("Present", "Not Present"))
   })
