@@ -81,6 +81,9 @@ m <- leaflet() %>% addTiles()
 
 #data with demographics
 data2 <- left_join(cal.county.pop, data1, by = c("CTYNAME" = "County"))
+data2$AGEGRP <- as.numeric(data2$AGEGRP)
+data2$AGESTATUS <- cut(data2$AGEGRP, c(0,4,9,13,18), labels = c("Children","Young adults", "Middle Age", "Elderly"))
+
 
 # app layout
 header <- dashboardHeader(title = "US Accidents")
@@ -382,16 +385,21 @@ server <- function(input, output, session) {
   
   #Age group demographic
   output$age_groups <- renderPlot({
-    ggplot(data=data2[data2$CTYNAME==input$county,], aes(x=AGEGRP, y= TOT_POP)) +
-      geom_bar(stat= "identity") + 
-      scale_x_continuous(breaks = data2$AGEGRP)
-  })
+    if (input$year == "2016-2019"){
+    ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
+      geom_bar(stat="identity") +
+      labs(x = "Age group", y= "Population", title = "Age demographics") + 
+      theme(legend.position = "none")
+  }})
   
-  #Idk how to do this man
+  #Gender demographics
   output$gender <- renderPlot({
-    ggplot(data=data2[data2$CTYNAME==input$county,], aes(x=c(TOT_MALE, TOT_FEMALE))) +
-      geom_bar()
-  })
+    if (input$year == "2016-2019"){
+    ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
+      geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
+      geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
+      labs(x="Gender", y="Population", title = "Gender demographics")
+  }})
   
 }
 
