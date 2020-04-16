@@ -87,6 +87,21 @@ data2 <- left_join(cal.county.pop, data1, by = c("CTYNAME" = "County"))
 data2$AGEGRP <- as.numeric(data2$AGEGRP)
 data2$AGESTATUS <- cut(data2$AGEGRP, c(0,4,9,13,18), labels = c("Children","Young adults", "Middle Age", "Elderly"))
 
+# unique weekdays
+years <- unique(CA$year)
+
+df <- data.frame()
+for (y in years) {
+  df1 <- CA[CA$year==y,]
+  df2 <- df1 %>% group_by(day) %>% summarise(total=n())
+  df3 <- aggregate(df1$day, by=list(df1$date), FUN=unique)
+  df4 <- df3 %>% group_by(x) %>% summarise(count=n())
+  df2$count <- df4$count
+  df2$avg <- df2$total/df2$count
+  df2$year <- y
+  df <- rbind(df, df2)
+  df
+  }
 
 # app layout
 header <- dashboardHeader(title = "US Accidents")
