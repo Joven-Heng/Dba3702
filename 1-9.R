@@ -205,7 +205,10 @@ body <- dashboardBody(
               br(),
               br(),
               br(),
-              box(plotOutput("weathertype_accident"), title = "Weather Conditions"),
+              tabBox(title = "Weather Conditions",
+                     id = "weather",
+                     tabPanel("Absolute", plotOutput("weather_absolute")),
+                     tabPanel("Relative", plotOutput("weather_relative"))),
               box(plotOutput("road_safety"), title = "Road Conditions")
             ),
             
@@ -386,15 +389,28 @@ server <- function(input, output, session) {
   
   
   # weather boxplot
-  output$weathertype_accident <- renderPlot({
+  output$weather_absolute <- renderPlot({
     if (input$year != "2016-2019"){
       data <- CA[CA$year == input$year,]
     }else{
       data <- CA
     }
-    ggplot(data[data$County==input$county,], aes(x=Weather_Type, fill=as.character(Severity))) + 
+    ggplot(data[data$County==input$county & !is.na(data$Weather_Type),], aes(x=Weather_Type, fill=as.character(Severity))) + 
       geom_bar(position = "dodge") +
       labs(x="Weather Condition", y="Count", fill="Severity Level") +
+      theme_economist_white() + 
+      theme(axis.text.x = element_text(angle = 90))
+  })
+  
+  output$weather_relative <- renderPlot({
+    if (input$year != "2016-2019"){
+      data <- CA[CA$year == input$year,]
+    }else{
+      data <- CA
+    }
+    ggplot(data[data$County==input$county & !is.na(data$Weather_Type),], aes(x=Weather_Type, fill=as.character(Severity))) + 
+      geom_bar(position = "fill") +
+      labs(x="Weather Condition", y="Proportion", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90))
   })
