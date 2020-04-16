@@ -14,6 +14,8 @@ library(tidyr)
 # only load once
 CA <- read.csv("CA.csv")
 CA <- CA %>% mutate(hour = substr(Start_Time,12,13), month = substr(date,6,7), year = substr(date,1,4)) 
+CA$day <- factor(CA$day,levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+CA$typeDay <- ifelse(CA$ph == 1, "public holiday", ifelse(CA$weekend ==1, "weekend", "weekday"))
 
 # data consolidation
 data1 <- CA %>% group_by(County, year) %>% summarise(count=n())
@@ -30,7 +32,7 @@ data1 <- data1 %>% mutate(pop.rate = count*1000/pop)
 county.veh <- read.csv("estimated vehicles by county.csv")
 county.veh <- county.veh[-59,c(-7:-11)]
 county.veh$COUNTIES <- county.pop$CTYNAME
-county.veh <- as.data.frame(lapply(county.veh, function(y) gsub(",", "", y))) 
+county.veh <- as.data.frame(lapply(county.veh, function(y) gsub(",", "", y)))
 county.veh$TOTAL <- as.numeric(as.character(county.veh$TOTAL))
 
 data1 <- left_join(data1,county.veh[,c("COUNTIES","TOTAL")], by=c("County"="COUNTIES"))
@@ -102,7 +104,26 @@ for (y in years) {
   df <- rbind(df, df2)
   df
   }
+                                   
+df22<- data.frame()
+for (y in years) {
+  df1 <- CA[CA$year==y,]
+  df2 <- df1 %>% group_by(typeDay) %>% summarise(total=n())
+  df3 <- aggregate(df1$typeDay, by=list(df1$date), FUN=unique)
+  df4 <- df3 %>% group_by(x) %>% summarise(count=n())
+  df2$count <- df4$count
+  df2$avg <- df2$total/df2$count
+  df2$year <- y
+  df22 <- rbind(df22, df2)
+  df22
+}
+                                   
+df$day <- factor(df$day,levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+dfsummarised <- df%>% group_by(day) %>% summarise(total = sum(total))
 
+dftotal <- df %>% group_by(day) %>% summarise(total = sum(count))
+dftotal2 <- df22 %>% group_by(typeDay) %>% summarise(total = sum(count))
+                                   
 # app layout
 header <- dashboardHeader(title = "US Accidents")
 
@@ -220,7 +241,8 @@ body <- dashboardBody(
                 height = 500,
                 tabPanel("Hour", plotOutput("hour")),
                 tabPanel("Day", plotOutput("day")),
-                tabPanel("Month", plotOutput("month"))
+                tabPanel("Month", plotOutput("month")),
+                tabPanel("Summary", plotOutput("daySummary"))
               )
             )
             
@@ -265,7 +287,7 @@ server <- function(input, output, session) {
       theme_minimal() +
       theme(axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
       labs(title = "Road Conditions") +
-      scale_fill_discrete(name = "", labels = c("Present", "Not Present"),values = c("olivedrab1", "firebrick1")) +
+      scale_fill_manual(name = "", labels = c("Present", "Not Present"),values = c("olivedrab1", "firebrick1")) +
       theme(legend.position="top")
   })
   
@@ -450,19 +472,35 @@ server <- function(input, output, session) {
       theme_economist_white()
   })
   
-  output$day <- renderPlot({
+   output$day <- renderPlot({
     if (input$year != "2016-2019"){
       data <- CA[CA$year == input$year,]
+      df77 <- df %>% filter(year == input$year)
     }else{
       data <- CA
+      df77 <- dftotal
+      names(df77) <- c("day", "total")
     }
     ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x = day ,y = ..count.., fill = as.character(ph))) +
-      labs(x="Day", y="Count") +
+      geom_bar(aes(x = day ,y = ..count../df77$total , fill = as.character(ph))) +
+      labs(x = "", y="Average number of accidents per day") +
       labs(fill = "Public Holiday") + 
       theme_economist_white()
   })
   
+  output$daySummary <- renderPlot({
+    if (input$year != "2016-2019"){
+      data <- CA[CA$year == input$year,]
+      df88 <- df22 %>% filter(year == input$year)
+    }else{
+      data <- CA
+      df88 <- dftotal2
+    }
+    ggplot(data=data[data$County==input$county,]) + 
+      geom_bar(aes(x = typeDay ,y = ..count../df88$total )) +
+      labs(x = "", y="Average number of accidents per day") +
+      theme_economist_white()
+  })
   
   output$month <- renderPlot({
     if (input$year != "2016-2019"){
