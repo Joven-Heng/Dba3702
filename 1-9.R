@@ -432,7 +432,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
-      scale_fill_discrete(name = "", labels = c("Present", "Not Present"))
+      scale_fill_manual(name = "", labels = c("Present", "Not Present"), values = c("green", "red"))
   })
   
   # time series plot
