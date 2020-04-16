@@ -85,7 +85,7 @@ n <- leaflet() %>% addTiles()
 #data with demographics
 data2 <- left_join(cal.county.pop, data1, by = c("CTYNAME" = "County"))
 data2$AGEGRP <- as.numeric(data2$AGEGRP)
-data2$AGESTATUS <- cut(data2$AGEGRP, c(0,4,9,13,18), labels = c("Children","Young adults", "Middle Age", "Elderly"))
+data2$AGESTATUS <- cut(data2$AGEGRP, c(0,4,9,13,18), labels = c("Children","Young Adults", "Middle Age", "Elderly"))
 
 # unique weekdays
 years <- unique(CA$year)
@@ -135,7 +135,7 @@ body <- dashboardBody(
             ),
             
             fluidRow(
-              box(plotOutput("plot1"), width=12, title = "Distribution across Counties")
+              box(plotOutput("plot1"), width=12, title = "Distribution Across Counties")
             ),
             
             fluidRow(
