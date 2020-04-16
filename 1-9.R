@@ -135,12 +135,12 @@ body <- dashboardBody(
             ),
             
             fluidRow(
-              box(plotOutput("plot1"), width=12)
+              box(plotOutput("plot1"), width=12, title = "Distribution across Counties")
             ),
             
             fluidRow(
-              box(plotOutput("plot2"), width=8),
-              box(plotOutput("plot3"), width=4)
+              box(plotOutput("plot2"), width=8, title = "Accident Road Conditions"),
+              box(plotOutput("plot3"), width=4, title = "Accident Severity Levels")
             )
     ),
     
@@ -240,7 +240,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x=reorder(County,-pop.rate), y=no.accidents), fill="black", alpha=0.5, stat="identity") +
       geom_line(aes(x=reorder(County,-pop.rate), y=pop.rate*5000, color="Accidents per 1000 people"), group=1, stat="identity") +
       geom_line(aes(x=reorder(County,-pop.rate), y=veh.rate*5000, color="Accidents per 1000 vehicles"), group=1, stat="identity") +
-      scale_y_continuous(sec.axis=sec_axis(~./50000, name="Accident Rate")) +
+      scale_y_continuous(sec.axis=sec_axis(~./5000, name="Accident Rate")) +
       labs(title = paste("Accident Frequency By County", input$year), x="County", y="Number of Accidents") +
       scale_colour_manual(values=c("Accidents per 1000 people"="red", "Accidents per 1000 vehicles"="blue"), 
                           labels = c("Accidents per 1000 people", "Accidents per 1000 vehicles"), name="Legend:") +
@@ -497,7 +497,10 @@ server <- function(input, output, session) {
     }else{
       data <- CA
     }
-    ggplot(data=data[data$County==input$county,]) + geom_bar(aes(x=City, y=..count..)) + theme(axis.text.x=element_text(angle=90))
+    ggplot(data=data[data$County==input$county,]) + 
+    geom_bar(aes(x=City, y=..count..)) + 
+    labs(x="City", y="Count") +
+    theme(axis.text.x=element_text(angle=90))
   })
 
   
