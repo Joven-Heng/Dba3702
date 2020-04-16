@@ -265,7 +265,8 @@ server <- function(input, output, session) {
       theme_minimal() +
       theme(axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
       labs(title = "Road Conditions") +
-      scale_fill_discrete(name = "", labels = c("Present", "Not Present"))
+      scale_fill_discrete(name = "", labels = c("Present", "Not Present"),values = c("olivedrab1", "firebrick1")) +
+      theme(legend.position="top")
   })
   
   # severity pie chart
@@ -293,7 +294,8 @@ server <- function(input, output, session) {
             axis.ticks=element_blank(),
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
-            panel.grid.major=element_blank())
+            panel.grid.major=element_blank())+
+      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
   })
   
   
@@ -400,7 +402,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Count", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("green", "yellow", "orange", "red"))
+    scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
   })
   
   output$weather_relative <- renderPlot({
@@ -414,7 +416,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Proportion", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("green", "yellow", "orange", "red"))
+      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
   })
   
   # road safety boxplot
@@ -432,7 +434,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
-      scale_fill_manual(name = "", labels = c("Present", "Not Present"), values = c("green", "red"))
+      scale_fill_manual(name = "", labels = c("Present", "Not Present"), values = c("olivedrab1", "firebrick1"))
   })
   
   # time series plot
