@@ -168,7 +168,7 @@ body <- dashboardBody(
                 tabPanel("Age Groups", plotOutput("age_groups")),
                 tabPanel("Gender", plotOutput("gender"))
               ),
-              box(plotOutput("city"))
+              box(plotOutput("city"), title = "Accident Frequency by City")
             )
             
     ),
