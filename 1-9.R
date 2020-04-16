@@ -399,7 +399,8 @@ server <- function(input, output, session) {
       geom_bar(position = "dodge") +
       labs(x="Weather Condition", y="Count", fill="Severity Level") +
       theme_economist_white() + 
-      theme(axis.text.x = element_text(angle = 90))
+      theme(axis.text.x = element_text(angle = 90)) +
+      scale_fill_manual(values = c("green", "yellow", "orange", "red"))
   })
   
   output$weather_relative <- renderPlot({
@@ -412,7 +413,8 @@ server <- function(input, output, session) {
       geom_bar(position = "fill") +
       labs(x="Weather Condition", y="Proportion", fill="Severity Level") +
       theme_economist_white() + 
-      theme(axis.text.x = element_text(angle = 90))
+      theme(axis.text.x = element_text(angle = 90)) +
+      scale_fill_manual(values = c("green", "yellow", "orange", "red"))
   })
   
   # road safety boxplot
