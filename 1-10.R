@@ -563,6 +563,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x=City, y=..count.., fill = City)) + 
       labs(x="City", y="Count") +
       theme(axis.text.x=element_text(angle=90), legend.position = "none")
+  })
   
   
 }
