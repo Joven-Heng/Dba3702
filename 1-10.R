@@ -395,7 +395,7 @@ server <- function(input, output, session) {
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
             panel.grid.major=element_blank())+
-      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
   # distribution across counties
@@ -549,7 +549,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Count", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
   output$weather_relative <- renderPlot({
@@ -563,7 +563,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Proportion", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
   # road safety boxplot
@@ -669,8 +669,9 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x=City, y=..count.., fill = City)) + 
+      geom_bar(aes(x=City, y=..count.., fill = ..count..)) + 
       labs(x="City", y="Count") +
+      scale_fill_gradient(low = "green", high = "red") +
       theme(axis.text.x=element_text(angle=90), legend.position = "none")
   })
   
