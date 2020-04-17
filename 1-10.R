@@ -329,48 +329,47 @@ server <- function(input, output, session) {
   
   # distribution across counties
   output$plot4 <- renderPlot({
-    key <- "google api key"
-
-world <- ne_countries(scale = "medium", returnclass = "sf")
-byCounty <- CA %>% group_by(County) %>% summarise(count = n())
-
-counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
-counties <- subset(counties, grepl("california", counties$ID))
-counties$count <- byCounty$count
-
-bottom3 <- data1 %>% filter(year=="2016-2019") %>%
-  select(County, no.accidents) %>% 
-  arrange(no.accidents) %>% 
-  head(3)
-top3 <- data1 %>% filter(year=="2016-2019") %>%
-  select(County, no.accidents) %>% 
-  arrange(desc(no.accidents)) %>% 
-  head(3)
-
-calicounty <- as.data.frame(rbind(top3[,1], bottom3[,1]))
-calicounty <- add_column(calicounty, state="California", .before = "County")
-coords <- apply(calicounty, 1, function(x) {
-  google_geocode(address=paste(x["County"], x["state"], sep=", "), key=key)
-})
-calicounty <- cbind(calicounty, do.call(rbind, lapply(coords, geocode_coordinates)))
-calicounty <- st_as_sf(calicounty, coords = c("lng", "lat"), remove = FALSE, 
-                      crs = 4326, agr = "constant")
-
-ggplot(data = world) +
-  geom_sf() +
-  geom_sf(data = counties, aes(fill = count)) +
-  geom_sf(data = calicounty, size = 1) +
-  geom_text_repel(data = calicounty, aes(x = lng, y = lat, label = County), 
-                  fontface = "bold", size = 3,
-                  nudge_x = c(-3, -1.5, -2, 2, -1, 1),
-                  nudge_y = c(-1, -0.5, -1, 0.5, -0.5, 0.4)) +
-  coord_sf(xlim = c(-88, -78), ylim = c(24.5, 33), expand = FALSE) +
-  scale_fill_viridis_c(trans = "sqrt", alpha = .4) +
-  coord_sf(xlim = c(-125, -113), ylim = c(32, 43), expand = FALSE) +
-  labs(fill="Frequency", x="Longitude", y="Latitude")
+    key <- "key in google api key here"
+    
+    world <- ne_countries(scale = "medium", returnclass = "sf")
+    byCounty <- data1 %>% select(County, year, no.accidents) %>%
+      filter(year==input$year)
+    byCounty$County <- as.character(byCounty$County)
+    
+    counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
+    counties <- subset(counties, grepl("california", counties$ID))
+    counties$County <- str_to_title(sub('.*,\\s*', '', counties$ID))
+    counties <- left_join(counties, byCounty, by="County")
+    counties$no.accidents <- ifelse(is.na(counties$no.accidents), 0, counties$no.accidents)
+    
+    bottom3 <- byCounty %>% 
+      arrange(no.accidents) %>% 
+      head(3)
+    top3 <- byCounty %>% 
+      arrange(desc(no.accidents)) %>% 
+      head(3)
+    
+    calicounty <- as.data.frame(rbind(top3[,1], bottom3[,1]))
+    calicounty <- add_column(calicounty, state="California", .before = "County")
+    coords <- apply(calicounty, 1, function(x) {
+      google_geocode(address=paste(x["County"], x["state"], sep=", "), key=key)
+    })
+    calicounty <- cbind(calicounty, do.call(rbind, lapply(coords, geocode_coordinates)))
+    calicounty <- st_as_sf(calicounty, coords = c("lng", "lat"), remove = FALSE, 
+                           crs = 4326, agr = "constant")
+    
+    ggplot(data = world) +
+      geom_sf() +
+      geom_sf(data = counties, aes(fill = no.accidents)) +
+      geom_sf(data = calicounty, size = 1) +
+      geom_text_repel(data = calicounty, aes(x = lng, y = lat, label = County), 
+                      fontface = "bold", size = 3) +
+      scale_fill_viridis_c(trans = "sqrt", alpha = .4) +
+      coord_sf(xlim = c(-125, -113), ylim = c(32, 43), expand = FALSE) +
+      labs(fill="Frequency", x="Longitude", y="Latitude")
   })
   
-  
+ 
   # county
   output$county <- output$county2 <- renderValueBox({
     valueBox(input$county, paste("Accidents in", input$year),  icon = icon("map-marker"))
