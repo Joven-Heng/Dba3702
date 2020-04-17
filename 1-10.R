@@ -426,12 +426,12 @@ server <- function(input, output, session) {
   
   # popaccidentrate output
   output$popaccidentrate <- output$popaccidentrate2 <- renderInfoBox({
-    infoBox("Accident Rate", paste0(floor(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1000 people") )
+    infoBox("Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1000 people") )
   })
   
   # vehaccidentrate output
   output$vehaccidentrate <- output$vehaccidentrate2 <- renderInfoBox({
-    infoBox("Vehicle Accident Rate", paste0(floor(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1000 vehicles"))
+    infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1000 vehicles"))
   })
   
   # leaflet
