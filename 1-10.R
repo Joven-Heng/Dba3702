@@ -622,8 +622,9 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x=City, y=..count.., fill = City)) + 
+      geom_bar(aes(x=City, y=..count.., fill = ..count..)) + 
       labs(x="City", y="Count") +
+      scale_fill_gradient(low = "green", high = "red") +
       theme(axis.text.x=element_text(angle=90), legend.position = "none")
   })
   
