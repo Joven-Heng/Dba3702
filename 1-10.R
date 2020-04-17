@@ -489,9 +489,11 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) +
-      geom_bar(aes(x = hour ,y = ..count..)) +
+      geom_bar(aes(x = hour ,y = ..count.., fill = ..count..)) +
+      scale_fill_gradient(low = "green", high = "red") +
       labs(x="Hour", y="Count") +
-      theme_economist_white()
+      theme_economist_white() +
+      theme(legend.position = "none")
   })
   
   output$day <- renderPlot({
@@ -519,9 +521,11 @@ server <- function(input, output, session) {
       df88 <- dftotal2
     }
     ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x = typeDay ,y = ..count../df88$total )) +
+      geom_bar(aes(x = typeDay ,y = ..count../df88$total , fill = ..count../df88$total)) +
+      scale_fill_gradient(low = "green", high = "red") +
       labs(x = "", y="Average number of accidents per day") +
-      theme_economist_white()
+      theme_economist_white() + 
+      theme(legend.position = "none")
   })
   
   output$month <- renderPlot({
@@ -531,9 +535,11 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) +
-      geom_bar(aes(x = month ,y = ..count..)) +
+      geom_bar(aes(x = month ,y = ..count.., fill = ..count..)) +
       labs(x="Month", y="Count") +
-      theme_economist_white()
+      scale_fill_gradient(low = "green", high = "red") +
+      theme_economist_white() + 
+      theme(legend.position = "none")
   })
   
   #Age group demographic
