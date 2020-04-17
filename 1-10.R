@@ -15,6 +15,7 @@ library(rnaturalearth)
 library(rnaturalearthdata)
 library(maps)
 library(googleway)
+library(stringr)
 
 # only load once
 CA <- read.csv("CA.csv")
