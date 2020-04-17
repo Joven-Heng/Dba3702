@@ -14,13 +14,14 @@ library(sf)
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(maps)
+library(googleway)
 
 # only load once
 CA <- read.csv("CA.csv")
 CA <- CA %>% mutate(hour = substr(Start_Time,12,13), month = substr(date,6,7), year = substr(date,1,4)) 
 CA$day <- factor(CA$day,levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
-CA$typeDay <- ifelse(CA$ph == 1, "public holiday", ifelse(CA$weekend ==1, "weekend", "weekday"))
-CA$typeDay <- factor(CA$typeDay, levels = c("weekday", "weekend", "public holiday"))
+CA$typeDay <- ifelse(CA$ph == 1, "Public holiday", ifelse(CA$weekend ==1, "Weekend", "Weekday"))
+CA$typeDay <- factor(CA$typeDay, levels = c("Weekday", "Weekend", "Public holiday"))
 
 # data consolidation
 data1 <- CA %>% group_by(County, year) %>% summarise(count=n())
@@ -328,19 +329,45 @@ server <- function(input, output, session) {
   
   # distribution across counties
   output$plot4 <- renderPlot({
-    world <- ne_countries(scale = "medium", returnclass = "sf")
-    byCounty <- CA %>% group_by(County) %>% summarise(count = n())
-    
-    counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
-    counties <- subset(counties, grepl("california", counties$ID))
-    counties$count <- byCounty$count
-    
-    ggplot(data = world) +
-      geom_sf() +
-      geom_sf(data = counties, aes(fill = count)) +
-      scale_fill_viridis_c(trans = "sqrt", alpha = .4) +
-      coord_sf(xlim = c(-126, -114), ylim = c(32, 43), expand = FALSE) +
-      labs(fill="Frequency")
+    key <- "AIzaSyB3phfQlNv2246hb6rUvKm4J7CMPWHkZyQ"
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+byCounty <- CA %>% group_by(County) %>% summarise(count = n())
+
+counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
+counties <- subset(counties, grepl("california", counties$ID))
+counties$count <- byCounty$count
+
+bottom3 <- data1 %>% filter(year=="2016-2019") %>%
+  select(County, no.accidents) %>% 
+  arrange(no.accidents) %>% 
+  head(3)
+top3 <- data1 %>% filter(year=="2016-2019") %>%
+  select(County, no.accidents) %>% 
+  arrange(desc(no.accidents)) %>% 
+  head(3)
+
+calicounty <- as.data.frame(rbind(top3[,1], bottom3[,1]))
+calicounty <- add_column(calicounty, state="California", .before = "County")
+coords <- apply(calicounty, 1, function(x) {
+  google_geocode(address=paste(x["County"], x["state"], sep=", "), key=key)
+})
+calicounty <- cbind(calicounty, do.call(rbind, lapply(coords, geocode_coordinates)))
+calicounty <- st_as_sf(calicounty, coords = c("lng", "lat"), remove = FALSE, 
+                      crs = 4326, agr = "constant")
+
+ggplot(data = world) +
+  geom_sf() +
+  geom_sf(data = counties, aes(fill = count)) +
+  geom_sf(data = calicounty, size = 1) +
+  geom_text_repel(data = calicounty, aes(x = lng, y = lat, label = County), 
+                  fontface = "bold", size = 3,
+                  nudge_x = c(-3, -1.5, -2, 2, -1, 1),
+                  nudge_y = c(-1, -0.5, -1, 0.5, -0.5, 0.4)) +
+  coord_sf(xlim = c(-88, -78), ylim = c(24.5, 33), expand = FALSE) +
+  scale_fill_viridis_c(trans = "sqrt", alpha = .4) +
+  coord_sf(xlim = c(-125, -113), ylim = c(32, 43), expand = FALSE) +
+  labs(fill="Frequency", x="Longitude", y="Latitude")
   })
   
   
