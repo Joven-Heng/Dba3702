@@ -20,6 +20,7 @@ CA <- read.csv("CA.csv")
 CA <- CA %>% mutate(hour = substr(Start_Time,12,13), month = substr(date,6,7), year = substr(date,1,4)) 
 CA$day <- factor(CA$day,levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
 CA$typeDay <- ifelse(CA$ph == 1, "public holiday", ifelse(CA$weekend ==1, "weekend", "weekday"))
+CA$typeDay <- factor(CA$typeDay, levels = c("weekday", "weekend", "public holiday"))
 
 # data consolidation
 data1 <- CA %>% group_by(County, year) %>% summarise(count=n())
