@@ -168,53 +168,6 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
-  tags$head(tags$style(HTML('
-                                /* logo */
-                                .skin-blue .main-header .logo {
-                                background-color: #233C67;
-                                }
-
-                                /* logo when hovered */
-                                .skin-blue .main-header .logo:hover {
-                                background-color: #233C67;
-                                }
-
-                                /* navbar (rest of the header) */
-                                .skin-blue .main-header .navbar {
-                                background-color: #233C67;
-                                }
-
-                                /* main sidebar */
-                                .skin-blue .main-sidebar {
-                                background-color: #000000;
-                                }
-
-                                /* active selected tab in the sidebarmenu */
-                                .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-                                background-color: #FFFFFF;
-                                }
-
-                                /* other links in the sidebarmenu */
-                                .skin-blue .main-sidebar .sidebar .sidebar-menu a{
-                                background-color: #FFFFFF;
-                                color: #233C67;
-                                }
-
-                                /* other links in the sidebarmenu when hovered */
-                                .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
-                                background-color: #233C67;
-                                }
-                                /* toggle button when hovered  */
-                                .skin-blue .main-header .navbar .sidebar-toggle:hover{
-                                background-color: #233C67;
-                                }
-
-                                /* body */
-                                .content-wrapper, .right-side {
-                                background-color: #808080;
-                                }
-
-                                '))),
   
   tabItems(
     # Tab 1 content
@@ -233,12 +186,12 @@ body <- dashboardBody(
               tabBox(
                 title = "Details of Accidents",
                 id = "things",
-                width = 5,
+                width = 4,
                 height = 500,
-                tabPanel("Accident Road Conditions", plotOutput("plot2")),
-                tabPanel("Accident Severity Levels", plotOutput("plot3"))
+                tabPanel("Road Conditions", plotOutput("plot2")),
+                tabPanel("Severity Levels", plotOutput("plot3"))
               ),
-              box(DT::dataTableOutput("overviewTable"), title = "Statistics of the population")
+              box(DT::dataTableOutput("overviewTable"), title = "Statistics of the population", width = 8)
             )
             
     ),
@@ -308,7 +261,10 @@ body <- dashboardBody(
                      id = "weather",
                      tabPanel("Absolute", plotOutput("weather_absolute")),
                      tabPanel("Relative", plotOutput("weather_relative"))),
-              box(plotOutput("road_safety"), title = "Road Conditions")
+              tabBox(title = "Details of Accidents", 
+                     id = "Details of Accidents",
+                     tabPanel("Road Conditions",plotOutput("road_safety")),
+                     tabPanel("Severity Level", plotOutput("plot3b")))
             ),
             
             fluidRow(
@@ -395,12 +351,14 @@ server <- function(input, output, session) {
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
             panel.grid.major=element_blank())+
-      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
+      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
   })
+  
+ 
   
   # distribution across counties
   output$plot4 <- renderPlot({
-    key <- 'insert key here'
+    key <- 'Insert key here'
     
     world <- ne_countries(scale = "medium", returnclass = "sf")
     byCounty <- data1 %>% select(County, year, no.accidents) %>%
@@ -549,7 +507,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Count", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
+      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
   })
   
   output$weather_relative <- renderPlot({
@@ -563,7 +521,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Proportion", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
+      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
   })
   
   # road safety boxplot
@@ -582,6 +540,38 @@ server <- function(input, output, session) {
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
       scale_fill_manual(name = "", labels = c("Not Present", "Present"), values = c("firebrick1", "olivedrab1"))
+  })
+  
+  #Severity piegraph 2
+  output$plot3b <- renderPlot({
+    data2 <- CA
+    data2 <- data2[data2$County==input$county,]
+    # severity percentage
+    sev <- data2 %>% group_by(Severity, year) %>% summarise(count = n())
+    sev <- spread(sev, year, count)
+    sev[is.na(sev)] <-0
+    sev <- sev %>% mutate(`2016-2019` = `2016`+`2017`+`2018`+`2019`)
+    sev <- gather(sev,`2016`,`2017`,`2018`,`2019`,`2016-2019`, key = "year", value = "count")
+    by.year <- sev %>% group_by(year) %>% summarise(sum(count))
+    sev <- left_join(sev, by.year, by="year")
+    sev$per <- sev$count/sev$`sum(count)`
+    sev$label <- percent(sev$per, accuracy = 0.1)
+    data <- sev[sev$year == input$year,]
+    data[is.na(data)] <-0
+    ggplot(data) +
+      geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
+      coord_polar("y", start=0) +
+      labs(title = "Severity of Accidents by Percentage", fill = "Severity Level") +
+      theme_economist_white() +
+      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 1) +
+      theme(axis.line=element_blank(),
+            axis.text.x=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks=element_blank(),
+            axis.title.x=element_blank(),
+            axis.title.y=element_blank(),
+            panel.grid.major=element_blank())+
+      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
   })
   
   # time series plot
@@ -669,9 +659,8 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x=City, y=..count.., fill = ..count..)) + 
+      geom_bar(aes(x=City, y=..count.., fill = City)) + 
       labs(x="City", y="Count") +
-      scale_fill_gradient(low = "green", high = "red") +
       theme(axis.text.x=element_text(angle=90), legend.position = "none")
   })
   
@@ -679,3 +668,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
