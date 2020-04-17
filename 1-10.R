@@ -560,10 +560,9 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x=City, y=..count..)) + 
+      geom_bar(aes(x=City, y=..count.., fill = City)) + 
       labs(x="City", y="Count") +
-      theme(axis.text.x=element_text(angle=90))
-  })
+      theme(axis.text.x=element_text(angle=90), legend.position = "none")
   
   
 }
