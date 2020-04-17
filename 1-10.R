@@ -47,14 +47,14 @@ county.veh$TOTAL <- as.numeric(as.character(county.veh$TOTAL))
 
 #datatable
 caltotal <- cal.county.pop %>% filter(AGEGRP == 0)
-calelderley <- cal.county.pop %>% filter(AGEGRP >= 14) %>% group_by(CTYNAME) %>% summarize(Elderley = sum(TOT_POP))
+calelderly <- cal.county.pop %>% filter(AGEGRP >= 14) %>% group_by(CTYNAME) %>% summarize(Elderly = sum(TOT_POP))
 calYoung<- cal.county.pop %>% filter(AGEGRP >= 1 & AGEGRP <=3) %>% group_by(CTYNAME) %>% summarize(Children = sum(TOT_POP))
 county.veh2 <- county.veh %>% select(COUNTIES, Vehicles = TOTAL)
 df9 <- caltotal %>% select(County = CTYNAME, Population = TOT_POP)
-df9 <- left_join(df9, calelderley, by = c("County" = "CTYNAME"))
+df9 <- left_join(df9, calelderly, by = c("County" = "CTYNAME"))
 df9 <- left_join(df9, calYoung, by = c("County" = "CTYNAME"))
 df9 <- left_join(df9, county.veh2, by = c("County" = "COUNTIES"))
-df9 <- mutate(df9, `% elderley` = signif(Elderley/Population,2), `% Children` = signif(Children/Population,2), `% Vehicles` = signif(Vehicles/Population,2))
+df9 <- mutate(df9, `% Elderly` = signif(Elderly/Population,2), `% Children` = signif(Children/Population,2), `% Vehicles` = signif(Vehicles/Population,2))
 
 
 data1 <- left_join(data1,county.veh[,c("COUNTIES","TOTAL")], by=c("County"="COUNTIES"))
@@ -186,7 +186,7 @@ body <- dashboardBody(
               tabBox(
                 title = "Details of Accidents",
                 id = "things",
-                width = 6,
+                width = 5,
                 height = 500,
                 tabPanel("Accident Road Conditions", plotOutput("plot2")),
                 tabPanel("Accident Severity Levels", plotOutput("plot3"))
@@ -332,7 +332,7 @@ server <- function(input, output, session) {
     by.year <- sev %>% group_by(year) %>% summarise(sum(count))
     sev <- left_join(sev, by.year, by="year")
     sev$per <- sev$count/sev$`sum(count)`
-    sev$label <- percent(sev$per, accuracy = 0.01)
+    sev$label <- percent(sev$per, accuracy = 0.1)
     
     data <- sev[sev$year == input$year,]
     ggplot(data) +
@@ -622,9 +622,8 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x=City, y=..count.., fill = ..count..)) + 
+      geom_bar(aes(x=City, y=..count.., fill = City)) + 
       labs(x="City", y="Count") +
-      scale_fill_gradient(low = "green", high = "red") +
       theme(axis.text.x=element_text(angle=90), legend.position = "none")
   })
   
