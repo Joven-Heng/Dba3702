@@ -329,7 +329,7 @@ server <- function(input, output, session) {
   
   # distribution across counties
   output$plot4 <- renderPlot({
-    key <- "AIzaSyB3phfQlNv2246hb6rUvKm4J7CMPWHkZyQ"
+    key <- "google api key"
 
 world <- ne_countries(scale = "medium", returnclass = "sf")
 byCounty <- CA %>% group_by(County) %>% summarise(count = n())
