@@ -309,7 +309,7 @@ server <- function(input, output, session) {
     by.year <- sev %>% group_by(year) %>% summarise(sum(count))
     sev <- left_join(sev, by.year, by="year")
     sev$per <- sev$count/sev$`sum(count)`
-    sev$label <- percent(sev$per, accuracy = 0.1)
+    sev$label <- percent(sev$per, accuracy = 0.01)
     
     data <- sev[sev$year == input$year,]
     ggplot(data) +
