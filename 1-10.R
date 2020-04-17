@@ -292,7 +292,7 @@ server <- function(input, output, session) {
       theme_minimal() +
       theme(axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
       labs(title = "Road Conditions") +
-      scale_fill_manual(name = "", labels = c("Not Present", "Present"),values = c("olivedrab1", "firebrick1")) +
+      scale_fill_manual(name = "", labels = c("Not Present", "Present"),values = c("firebrick1", "olivedrab1")) +
       theme(legend.position="top")
   })
   
@@ -478,7 +478,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
-      scale_fill_manual(name = "", labels = c("Not Present", "Present"), values = c("olivedrab1", "firebrick1"))
+      scale_fill_manual(name = "", labels = c("Not Present", "Present"), values = c("firebrick1", "olivedrab1"))
   })
   
   # time series plot
