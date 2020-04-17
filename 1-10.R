@@ -16,6 +16,8 @@ library(rnaturalearthdata)
 library(maps)
 library(googleway)
 library(stringr)
+library(ggmap)
+library(DT)
 
 # only load once
 CA <- read.csv("CA.csv")
@@ -36,11 +38,24 @@ data1 <- left_join(data1,county.pop, by=c("County"="CTYNAME"))
 data1 <- data1 %>% mutate(pop.rate = count*1000/pop)
 #data1 <- data1[order(data1$pop.rate, decreasing = T),]
 
+
 county.veh <- read.csv("estimated vehicles by county.csv")
 county.veh <- county.veh[-59,c(-7:-11)]
 county.veh$COUNTIES <- county.pop$CTYNAME
 county.veh <- as.data.frame(lapply(county.veh, function(y) gsub(",", "", y)))
 county.veh$TOTAL <- as.numeric(as.character(county.veh$TOTAL))
+
+#datatable
+caltotal <- cal.county.pop %>% filter(AGEGRP == 0)
+calelderley <- cal.county.pop %>% filter(AGEGRP >= 14) %>% group_by(CTYNAME) %>% summarize(Elderley = sum(TOT_POP))
+calYoung<- cal.county.pop %>% filter(AGEGRP >= 1 & AGEGRP <=3) %>% group_by(CTYNAME) %>% summarize(Children = sum(TOT_POP))
+county.veh2 <- county.veh %>% select(COUNTIES, Vehicles = TOTAL)
+df9 <- caltotal %>% select(County = CTYNAME, Population = TOT_POP)
+df9 <- left_join(df9, calelderley, by = c("County" = "CTYNAME"))
+df9 <- left_join(df9, calYoung, by = c("County" = "CTYNAME"))
+df9 <- left_join(df9, county.veh2, by = c("County" = "COUNTIES"))
+df9 <- mutate(df9, `% elderley` = signif(Elderley/Population,2), `% Children` = signif(Children/Population,2), `% Vehicles` = signif(Vehicles/Population,2))
+
 
 data1 <- left_join(data1,county.veh[,c("COUNTIES","TOTAL")], by=c("County"="COUNTIES"))
 data1 <- data1 %>% mutate(veh.rate = count*1000/TOTAL)
@@ -168,9 +183,17 @@ body <- dashboardBody(
             ),
             
             fluidRow(
-              box(plotOutput("plot2"), width=8, title = "Accident Road Conditions"),
-              box(plotOutput("plot3"), width=4, title = "Accident Severity Levels")
+              tabBox(
+                title = "Details of Accidents",
+                id = "things",
+                width = 6,
+                height = 500,
+                tabPanel("Accident Road Conditions", plotOutput("plot2")),
+                tabPanel("Accident Severity Levels", plotOutput("plot3"))
+              ),
+              box(DT::dataTableOutput("overviewTable"), title = "Statistics of the population")
             )
+            
     ),
     
     #Tab 2 content
@@ -330,7 +353,7 @@ server <- function(input, output, session) {
   
   # distribution across counties
   output$plot4 <- renderPlot({
-    key <- "key in google api key here"
+    key <- 'insert key here'
     
     world <- ne_countries(scale = "medium", returnclass = "sf")
     byCounty <- data1 %>% select(County, year, no.accidents) %>%
@@ -370,7 +393,12 @@ server <- function(input, output, session) {
       labs(fill="Frequency", x="Longitude", y="Latitude")
   })
   
- 
+  #Datatable
+  output$overviewTable <- DT::renderDataTable({
+    df9
+  })
+  
+  
   # county
   output$county <- output$county2 <- renderValueBox({
     valueBox(input$county, paste("Accidents in", input$year),  icon = icon("map-marker"))
