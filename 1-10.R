@@ -544,10 +544,10 @@ server <- function(input, output, session) {
   
   #Severity piegraph 2
   output$plot3b <- renderPlot({
-    data2 <- CA
-    data2 <- data2[data2$County==input$county,]
+    data13 <- CA
+    data13 <- data13[data13$County==input$county,]
     # severity percentage
-    sev <- data2 %>% group_by(Severity, year) %>% summarise(count = n())
+    sev <- data13 %>% group_by(Severity, year) %>% summarise(count = n())
     sev <- spread(sev, year, count)
     sev[is.na(sev)] <-0
     sev <- sev %>% mutate(`2016-2019` = `2016`+`2017`+`2018`+`2019`)
