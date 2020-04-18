@@ -286,8 +286,9 @@ body <- dashboardBody(
             ),
             
             fluidRow(
-              infoBoxOutput("popaccidentrate2", width=6),
-              infoBoxOutput("vehaccidentrate2", width=6)
+              infoBoxOutput("popaccidentrate2"),
+              infoBoxOutput("vehaccidentrate2"),
+              infoBoxOutput("accidentrank2")
             ),
             
             fluidRow(
