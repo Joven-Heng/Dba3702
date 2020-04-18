@@ -160,7 +160,7 @@ sidebar <- dashboardSidebar(
     menuItem(tabName = "overview", "Overview", icon = icon("globe-americas")),
     
     # Tab 2
-    menuItem(tabName = "county", "County Demographics", icon = icon("map-marker")),
+    menuItem(tabName = "county", "County Demographics", icon = icon("info")),
     
     # Tab 3
     menuItem(tabName = "county2", "County", icon = icon("map-marker")),
@@ -467,7 +467,7 @@ server <- function(input, output, session) {
   
   # no.accidents output
   output$no.accidents <- output$no.accidents2 <- renderInfoBox({
-    infoBox("Accidents", formatC(data1[data1$County==input$county & data1$year == input$year,"no.accidents"], format="d", big.mark = ","), icon = icon("users"), color = "navy")
+    infoBox("Accidents", formatC(data1[data1$County==input$county & data1$year == input$year,"no.accidents"], format="d", big.mark = ","), icon = icon("car-crash"), color = "navy")
   })
   
   # population output
@@ -477,22 +477,22 @@ server <- function(input, output, session) {
   
   # vehicle output
   output$vehicles <- output$vehicles2 <- renderInfoBox({
-    infoBox("Registered Vehicles", formatC(data1[data1$County==input$county & data1$year == input$year,"total.veh"], format="d", big.mark = ","),  icon = icon("users"), color = "navy")
+    infoBox("Registered Vehicles", formatC(data1[data1$County==input$county & data1$year == input$year,"total.veh"], format="d", big.mark = ","),  icon = icon("car"), color = "navy")
   })
   
   # popaccidentrate output
   output$popaccidentrate <- output$popaccidentrate2 <- renderInfoBox({
-    infoBox("Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1,000 people") , color = "navy")
+    infoBox("Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1,000 people"), icon = icon("percentage"), color = "navy")
   })
   
   # vehaccidentrate output
   output$vehaccidentrate <- output$vehaccidentrate2 <- renderInfoBox({
-    infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1,000 vehicles"), color = "navy")
+    infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1,000 vehicles"), icon = icon("percentage"), color = "navy")
   })
   
   #Accident rank output
   output$accidentrank<- output$accidentrank2 <- renderInfoBox({
-    infoBox("Accident Rank", paste0(data1[data1$County==input$county & data1$year == input$year,"rank"],sep = "/",length(unique(data1$County))), color = "navy")
+    infoBox("Accident Rank", paste0(data1[data1$County==input$county & data1$year == input$year,"rank"],sep = "/",length(unique(data1$County))), icon = icon("list-ol"), color = "navy")
   })
   
   # leaflet
