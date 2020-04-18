@@ -239,7 +239,7 @@ body <- dashboardBody(
                 width = 8,
                 tabPanel("Population Statistics", DT::dataTableOutput("overviewTable")),
                 tabPanel("Accident Rate Ranked by County", DT::dataTableOutput("rankdatatable"))
-            )
+              )
             )
             
     ),
@@ -399,15 +399,15 @@ server <- function(input, output, session) {
             axis.title.y=element_blank(),
             panel.grid.major=element_blank(),
             legend.text=element_text(size=10)) +
-            scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"),
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"),
                         labels = paste0(data$Severity, " (", data$label, ")"))
   })
   
- 
+  
   
   # distribution across counties
   output$plot4 <- renderPlot({
-    key <- 'Insert key here'
+    key <- 'INSERT API KEY HERE'
     
     world <- ne_countries(scale = "medium", returnclass = "sf")
     byCounty <- data1 %>% select(County, year, no.accidents) %>%
@@ -466,27 +466,27 @@ server <- function(input, output, session) {
   
   # no.accidents output
   output$no.accidents <- output$no.accidents2 <- renderInfoBox({
-    infoBox("Accidents", data1[data1$County==input$county & data1$year == input$year,"no.accidents"], icon = icon("users"), color = "navy")
+    infoBox("Accidents", formatC(data1[data1$County==input$county & data1$year == input$year,"no.accidents"], format="d", big.mark = ","), icon = icon("users"), color = "navy")
   })
   
   # population output
   output$population <- output$population2 <-renderInfoBox({
-    infoBox("Population", data1[data1$County==input$county & data1$year == input$year,"total.pop"], icon = icon("users"), color = "navy")
+    infoBox("Population", formatC(data1[data1$County==input$county & data1$year == input$year,"total.pop"], format="d", big.mark = ","), icon = icon("users"), color = "navy")
   })
   
   # vehicle output
   output$vehicles <- output$vehicles2 <- renderInfoBox({
-    infoBox("Registered Vehicles", data1[data1$County==input$county & data1$year == input$year,"total.veh"], icon = icon("users"), color = "navy")
+    infoBox("Registered Vehicles", formatC(data1[data1$County==input$county & data1$year == input$year,"total.veh"], format="d", big.mark = ","),  icon = icon("users"), color = "navy")
   })
   
   # popaccidentrate output
   output$popaccidentrate <- output$popaccidentrate2 <- renderInfoBox({
-    infoBox("Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1000 people") , color = "navy")
+    infoBox("Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1,000 people") , color = "navy")
   })
   
   # vehaccidentrate output
   output$vehaccidentrate <- output$vehaccidentrate2 <- renderInfoBox({
-    infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1000 vehicles"), color = "navy")
+    infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1,000 vehicles"), color = "navy")
   })
   
   #Accident rank output
@@ -619,7 +619,7 @@ server <- function(input, output, session) {
     sev$label <- percent(sev$per, accuracy = 0.01)
     data <- sev[sev$year == input$year,]
     data[is.na(data)] <-0
-   
+    
     ggplot(data) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
@@ -633,7 +633,7 @@ server <- function(input, output, session) {
             axis.title.y=element_blank(),
             panel.grid.major=element_blank(),
             legend.text=element_text(size=10)) +
-            scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"),
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"),
                         labels = paste0(data$Severity, " (", data$label, ")"))
   })
   
