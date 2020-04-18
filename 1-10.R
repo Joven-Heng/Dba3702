@@ -217,7 +217,7 @@ body <- dashboardBody(
     tabItem(tabName = "overview",
             
             fluidRow(
-              valueBox("California", "Traffic Accidents (2016-2019)", icon = icon("map-marker"), width = 12)
+              valueBox("California", "Traffic Accidents (2016-2019)", icon = icon("map-marker"), width = 12, color = "navy")
             ),
             
             fluidRow(
@@ -237,8 +237,8 @@ body <- dashboardBody(
               tabBox(
                 id = "Overviews",
                 width = 8,
-                tabPanel("Statistics of the population", DT::dataTableOutput("overviewTable")),
-                tabPanel("Ranking of accident rate by County", DT::dataTableOutput("rankdatatable"))
+                tabPanel("Population Statistics", DT::dataTableOutput("overviewTable")),
+                tabPanel("Accident Rate Ranked by County", DT::dataTableOutput("rankdatatable"))
             )
             )
             
@@ -298,8 +298,7 @@ body <- dashboardBody(
                 width = 12,
                 height = 500,
                 tabPanel("Severity Map", leafletOutput("severitymap2", height = 500)),
-                tabPanel("Cluster Map", leafletOutput("severitymap" , height = 500)),
-                tabPanel("Heat Map", leafletOutput("heatmap", height = 500))
+                tabPanel("Cluster Map", leafletOutput("severitymap" , height = 500))
               )
             ),
             
@@ -351,9 +350,7 @@ server <- function(input, output, session) {
       scale_colour_manual(values=c("Accidents per 1000 people"="red", "Accidents per 1000 vehicles"="blue"), 
                           labels = c("Accidents per 1000 people", "Accidents per 1000 vehicles"), name="Legend:") +
       theme_economist() +
-      theme(axis.text.x=element_text(angle=90), axis.title.y.left = element_text(size = 12),
-            axis.title.y.right = element_text(size = 12),plot.title = element_text(size = 25, hjust = 0.5), 
-            legend.text = element_text(size = 16), legend.title = element_text(size = 16))
+      theme(axis.text.x=element_text(angle=90, vjust = 0.5))
   })
   
   # bar chart for bumps,etc
@@ -370,9 +367,10 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.4) +
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.4) +
       theme_economist() +
-      theme(axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
+      theme(axis.text.x=element_text(angle=30, vjust=.8, hjust=0.8), axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
       labs(title = "Road Conditions", x="Road Condition", y="Count") +
-      scale_fill_manual(name = "", labels = c("Not Present", "Present"),values = c("firebrick1", "olivedrab1"))
+      scale_x_discrete(labels = c("Bump", "Give Way Sign", "Stop Sign", "Traffic Calming Marking", "Traffic Signal")) +
+      scale_fill_manual(name = "", labels = c("Not Present", "Present"), values = c("firebrick1", "olivedrab1"))
   })
   
   # severity pie chart
@@ -391,17 +389,18 @@ server <- function(input, output, session) {
     ggplot(data) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
-      labs(title = "Severity of Accidents by Percentage", fill = "Severity Level") +
+      labs(title = "Severity of Accidents by Percentage", fill = "Severity") +
       theme_economist() +
-      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 2) +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
             axis.text.y=element_blank(),
             axis.ticks=element_blank(),
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
-            panel.grid.major=element_blank())+
-      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
+            panel.grid.major=element_blank(),
+            legend.text=element_text(size=10)) +
+            scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"),
+                        labels = paste0(data$Severity, " (", data$label, ")"))
   })
   
  
@@ -442,10 +441,12 @@ server <- function(input, output, session) {
       geom_sf(data = counties, aes(fill = no.accidents)) +
       geom_sf(data = calicounty, size = 1) +
       geom_text_repel(data = calicounty, aes(x = lng, y = lat, label = County), 
-                      fontface = "bold", size = 3) +
+                      fontface = "bold", size = 4) +
       scale_fill_viridis_c(trans = "sqrt", alpha = .4) +
       coord_sf(xlim = c(-125, -113), ylim = c(32, 43), expand = FALSE) +
-      labs(fill="Frequency", x="Longitude", y="Latitude")
+      labs(fill="Frequency", x="Longitude", y="Latitude", title=paste("Accident Frequency Map", input$year)) +
+      theme_economist() +
+      theme(legend.position = "right", legend.text = element_text(size=12))
   })
   
   #Datatable
@@ -596,12 +597,13 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.3) +
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
       theme_economist() + 
-      theme(axis.title.x = element_blank()) +
+      theme(axis.text.x=element_text(angle=30, vjust=.8, hjust=0.8), axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
       labs(x="Road Condition", y="Count") +
-      scale_fill_manual(name = "", labels = c("Not Present", "Present"), values = c("firebrick1", "olivedrab1"))
+      scale_x_discrete(labels = c("Bump", "Give Way Sign", "Stop Sign", "Traffic Calming Marking", "Traffic Signal")) +
+      scale_fill_manual(name = "", labels = c("Not Present", "Present"),values = c("firebrick1", "olivedrab1"))
   })
   
-  #Severity piegraph 2
+  # severity pie chart 2
   output$plot3b <- renderPlot({
     data13 <- CA
     data13 <- data13[data13$County==input$county,]
@@ -617,20 +619,22 @@ server <- function(input, output, session) {
     sev$label <- percent(sev$per, accuracy = 0.01)
     data <- sev[sev$year == input$year,]
     data[is.na(data)] <-0
+   
     ggplot(data) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
-      labs(title = "Severity of Accidents by Percentage", fill = "Severity Level") +
+      labs(fill = "Severity") +
       theme_economist() +
-      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 2) +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
             axis.text.y=element_blank(),
             axis.ticks=element_blank(),
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
-            panel.grid.major=element_blank())+
-      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
+            panel.grid.major=element_blank(),
+            legend.text=element_text(size=10)) +
+            scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"),
+                        labels = paste0(data$Severity, " (", data$label, ")"))
   })
   
   # time series plot
@@ -643,7 +647,7 @@ server <- function(input, output, session) {
     ggplot(data=data[data$County==input$county,]) +
       geom_bar(aes(x = hour ,y = ..count.., fill = ..count..)) +
       scale_fill_gradient(low = "green", high = "red") +
-      labs(x="Hour", y="Count") +
+      labs(x="Hour", y="Average No. of Accidents") +
       theme_economist() +
       theme(legend.position = "none")
   })
@@ -659,7 +663,7 @@ server <- function(input, output, session) {
     }
     ggplot(data=data[data$County==input$county,]) + 
       geom_bar(aes(x = day ,y = ..count../df77$total , fill = as.character(ph))) +
-      labs(x = "", y="Average No. of Accidents Per Day") +
+      labs(x = "", y="Average No. of Accidents") +
       labs(fill = "Public Holiday") +
       scale_fill_manual(labels = c("0", "1"),values = c("firebrick1", "olivedrab1")) +
       theme_economist()
@@ -677,7 +681,7 @@ server <- function(input, output, session) {
     ggplot(data=data[data$County==input$county,]) + 
       geom_bar(aes(x = typeDay ,y = ..count../df88$total , fill = ..count../df88$total)) +
       scale_fill_gradient(low = "green", high = "red") +
-      labs(x = "", y="Average No. of Accidents Per Day") +
+      labs(x = "", y="Average No. of Accidents") +
       theme_economist() + 
       theme(legend.position = "none")
   })
@@ -690,7 +694,7 @@ server <- function(input, output, session) {
     }
     ggplot(data=data[data$County==input$county,]) +
       geom_bar(aes(x = month ,y = ..count.., fill = ..count..)) +
-      labs(x="Month", y="Count") +
+      labs(x="Month", y="Average No. of Accidents") +
       scale_fill_gradient(low = "green", high = "red") +
       theme_economist() + 
       theme(legend.position = "none")
@@ -726,7 +730,7 @@ server <- function(input, output, session) {
       labs(x="City", y="Count") +      
       scale_fill_gradient(low = "green", high = "red") +
       theme_economist() +
-      theme(axis.text.x=element_text(angle=90), legend.position = "none")
+      theme(axis.text.x=element_text(angle=90, vjust=0.5), legend.position = "none")
   })
   
   
