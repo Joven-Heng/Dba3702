@@ -490,7 +490,7 @@ server <- function(input, output, session) {
   
   #Accident rank output
   output$accidentrank<- output$accidentrank2 <- renderInfoBox({
-    infoBox("Accident Rank", data1[data1$County==input$county & data1$year == input$year,"rank"])
+    infoBox("Accident Rank", paste0(data1[data1$County==input$county & data1$year == input$year,"rank"],sep = "/",length(unique(data1$County))), color = "navy")
   })
   
   # leaflet
