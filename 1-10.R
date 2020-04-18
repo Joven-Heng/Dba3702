@@ -602,9 +602,11 @@ server <- function(input, output, session) {
     ggplot(data=data[data$County==input$county,]) + 
       geom_bar(aes(x = day ,y = ..count../df77$total , fill = as.character(ph))) +
       labs(x = "", y="Average number of accidents per day") +
-      labs(fill = "Public Holiday") + 
+      labs(fill = "Public Holiday") +
+      scale_fill_manual(labels = c("0", "1"),values = c("firebrick1", "olivedrab1")) +
       theme_economist_white()
   })
+  
   
   output$daySummary <- renderPlot({
     if (input$year != "2016-2019"){
