@@ -28,6 +28,7 @@ CA$typeDay <- factor(CA$typeDay, levels = c("Weekday", "Weekend", "Public holida
 
 # data consolidation
 data1 <- CA %>% group_by(County, year) %>% summarise(count=n())
+data1[is.na(data1)] <-0
 data1 <- spread(data1, year, count)
 data1 <- data1 %>% mutate(`2016-2019` = `2016`+`2017`+`2018`+`2019`)
 data1<- gather(data1,`2016`,`2017`,`2018`,`2019`,`2016-2019`, key = "year", value = "count")
