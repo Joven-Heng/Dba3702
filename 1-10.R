@@ -655,33 +655,52 @@ server <- function(input, output, session) {
   output$day <- renderPlot({
     if (input$year != "2016-2019"){
       data <- CA[CA$year == input$year,]
+      data <- data[data$County==input$county,]
       df77 <- df %>% filter(year == input$year)
+      df90 <- data %>% group_by(day) %>% summarise(accidents = n())
+      df91 <- right_join(df90, df, by = "day")
+      df91[is.na(df91)] <-0
+      df91$accidents <- as.numeric(df91$accidents)
+      data <- df91 %>% mutate(rate = accidents/count)
     }else{
       data <- CA
+      data <- data[data$County==input$county,]
       df77 <- dftotal
       names(df77) <- c("day", "total")
+      df90 <- data %>% group_by(day) %>% summarise(accidents = n())
+      df91 <- right_join(df90, df77, by = "day")
+      df91[is.na(df91)] <-0
+      df91$accidents <- as.numeric(df91$accidents)
+      data <- df91 %>% mutate(rate = accidents/total)
     }
-    ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x = day ,y = ..count../df77$total , fill = as.character(ph))) +
-      labs(x = "", y="Average No. of Accidents") +
-      labs(fill = "Public Holiday") +
-      scale_fill_manual(labels = c("0", "1"),values = c("firebrick1", "olivedrab1")) +
+    ggplot(data=data) + 
+      geom_bar(aes(x = day ,y = rate),fill = "firebrick1", stat = "identity") +
+      labs(x = "", y="Average No. of Accidents Per Day") +
       theme_economist()
   })
-  
   
   output$daySummary <- renderPlot({
     if (input$year != "2016-2019"){
       data <- CA[CA$year == input$year,]
+      data=data[data$County==input$county,]
       df88 <- df22 %>% filter(year == input$year)
+      df87 <- data %>% group_by(typeDay) %>% summarise(accidents = n())
+      df86 <- right_join(df87, df88, by = "typeDay")
+      df86[is.na(df86)] <-0
+      data <- df86 %>% mutate(rate = accidents/total)
     }else{
       data <- CA
+      data=data[data$County==input$county,]
       df88 <- dftotal2
+      df87 <- data %>% group_by(typeDay) %>% summarise(accidents = n())
+      df86 <- right_join(df87, df88, by = "typeDay")
+      df86[is.na(df86)] <-0
+      data <- df86 %>% mutate(rate = accidents/total)
     }
-    ggplot(data=data[data$County==input$county,]) + 
-      geom_bar(aes(x = typeDay ,y = ..count../df88$total , fill = ..count../df88$total)) +
+    ggplot(data= data) + 
+      geom_bar(aes(x = typeDay ,y = rate, fill = rate), stat= "identity") +
       scale_fill_gradient(low = "green", high = "red") +
-      labs(x = "", y="Average No. of Accidents") +
+      labs(x = "", y="Average No. of Accidents Per Day") +
       theme_economist() + 
       theme(legend.position = "none")
   })
