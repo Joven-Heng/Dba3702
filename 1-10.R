@@ -62,6 +62,9 @@ data1 <- left_join(data1,county.veh[,c("COUNTIES","TOTAL")], by=c("County"="COUN
 data1 <- data1 %>% mutate(veh.rate = count*1000/TOTAL)
 colnames(data1) <- c("County", "year", "no.accidents", "total.pop", "pop.rate", "total.veh", "veh.rate")
 
+data1 <- data1%>% group_by(year) %>% mutate(rank = dense_rank(desc(pop.rate)))
+data1rank<- data1%>% select(County, rank, year)
+data1rank <- data1rank%>% ungroup()
 
 # clean weather types
 w1 <- "Clear"
@@ -231,7 +234,12 @@ body <- dashboardBody(
                 tabPanel("Accident Road Conditions", plotOutput("plot2")),
                 tabPanel("Accident Severity Levels", plotOutput("plot3"))
               ),
-              box(DT::dataTableOutput("overviewTable"), title = "Statistics of the population", width = 8)
+              tabBox(
+                id = "Overviews",
+                width = 8,
+                tabPanel("Statistics of the population", DT::dataTableOutput("overviewTable")),
+                tabPanel("Ranking of accident rate by County", DT::dataTableOutput("rankdatatable"))
+            )
             )
             
     ),
@@ -248,8 +256,9 @@ body <- dashboardBody(
             ),
             
             fluidRow(
-              infoBoxOutput("popaccidentrate", width=6),
-              infoBoxOutput("vehaccidentrate", width=6)
+              infoBoxOutput("popaccidentrate"),
+              infoBoxOutput("vehaccidentrate"),
+              infoBoxOutput("accidentrank")
             ),
             
             #demographics
@@ -443,6 +452,10 @@ server <- function(input, output, session) {
     df9
   })
   
+  #Rank datatable
+  output$rankdatatable <- DT::renderDataTable({
+    data1rank %>% filter(year == input$year) %>% select(County, rank)
+  })
   
   # county
   output$county <- output$county2 <- renderValueBox({
@@ -472,6 +485,11 @@ server <- function(input, output, session) {
   # vehaccidentrate output
   output$vehaccidentrate <- output$vehaccidentrate2 <- renderInfoBox({
     infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1000 vehicles"), color = "navy")
+  })
+  
+  #Accident rank output
+  output$accidentrank<- output$accidentrank2 <- renderInfoBox({
+    infoBox("Accident Rank", data1[data1$County==input$county & data1$year == input$year,"rank"])
   })
   
   # leaflet
