@@ -23,8 +23,8 @@ library(DT)
 CA <- read.csv("CA.csv")
 CA <- CA %>% mutate(hour = substr(Start_Time,12,13), month = substr(date,6,7), year = substr(date,1,4)) 
 CA$day <- factor(CA$day,levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
-CA$typeDay <- ifelse(CA$ph == 1, "Public holiday", ifelse(CA$weekend ==1, "Weekend", "Weekday"))
-CA$typeDay <- factor(CA$typeDay, levels = c("Weekday", "Weekend", "Public holiday"))
+CA$typeDay <- ifelse(CA$ph == 1, "Public Holiday", ifelse(CA$weekend ==1, "Weekend", "Weekday"))
+CA$typeDay <- factor(CA$typeDay, levels = c("Weekday", "Weekend", "Public Holiday"))
 
 # data consolidation
 data1 <- CA %>% group_by(County, year) %>% summarise(count=n())
@@ -169,6 +169,45 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
+  tags$head(tags$style(HTML('
+                                /* logo */
+                                .skin-blue .main-header .logo {
+                                background-color: #00334e;
+                                }
+                                /* logo when hovered */
+                                .skin-blue .main-header .logo:hover {
+                                background-color: #00334e;
+                                }
+                                /* navbar (rest of the header) */
+                                .skin-blue .main-header .navbar {
+                                background-color: #00334e;
+                                }
+                                /* main sidebar */
+                                .skin-blue .main-sidebar {
+                                background-color: #145374;
+                                }
+                                /* active selected tab in the sidebarmenu */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+                                background-color: #5588a3;
+                                }
+                                /* other links in the sidebarmenu */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu a{
+                                background-color: #145374;
+                                color: #ffffff;
+                                }
+                                /* other links in the sidebarmenu when hovered */
+                                .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+                                background-color: #5588a3;
+                                }
+                                /* toggle button when hovered  */
+                                .skin-blue .main-header .navbar .sidebar-toggle:hover{
+                                background-color: #00334e;
+                                }
+                                /* body */
+                                .content-wrapper, .right-side {
+                                background-color: #f3f9fb;
+                                }
+                                '))),
   
   tabItems(
     # Tab 1 content
@@ -189,8 +228,8 @@ body <- dashboardBody(
                 id = "things",
                 width = 4,
                 height = 500,
-                tabPanel("Road Conditions", plotOutput("plot2")),
-                tabPanel("Severity Levels", plotOutput("plot3"))
+                tabPanel("Accident Road Conditions", plotOutput("plot2")),
+                tabPanel("Accident Severity Levels", plotOutput("plot3"))
               ),
               box(DT::dataTableOutput("overviewTable"), title = "Statistics of the population", width = 8)
             )
@@ -301,8 +340,9 @@ server <- function(input, output, session) {
       labs(title = paste("Accident Frequency By County", input$year), x="County", y="Number of Accidents") +
       scale_colour_manual(values=c("Accidents per 1000 people"="red", "Accidents per 1000 vehicles"="blue"), 
                           labels = c("Accidents per 1000 people", "Accidents per 1000 vehicles"), name="Legend:") +
-      theme_economist_white() +
-      theme(axis.text.x=element_text(angle=90), axis.title.y.left = element_text(size = 12),axis.title.y.right = element_text(size = 12),plot.title = element_text(size = 25, hjust = 0.5), 
+      theme_economist() +
+      theme(axis.text.x=element_text(angle=90), axis.title.y.left = element_text(size = 12),
+            axis.title.y.right = element_text(size = 12),plot.title = element_text(size = 25, hjust = 0.5), 
             legend.text = element_text(size = 16), legend.title = element_text(size = 16))
   })
   
@@ -310,7 +350,7 @@ server <- function(input, output, session) {
   output$plot2 <- renderPlot({
     if (input$year != "2016-2019"){
       data <- CA[CA$year == input$year,]
-    }else{
+    } else{
       data <- CA
     }
     ggplot(data) + 
@@ -319,11 +359,10 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Give_Way",y=..count.., fill=Give_Way), width=.4) + 
       geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.4) +
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.4) +
-      theme_minimal() +
+      theme_economist() +
       theme(axis.title.x = element_blank(), plot.title = element_text(size = 20, hjust = 0.5)) +
-      labs(title = "Road Conditions") +
-      scale_fill_manual(name = "", labels = c("Not Present", "Present"),values = c("firebrick1", "olivedrab1")) +
-      theme(legend.position="top")
+      labs(title = "Road Conditions", x="Road Condition", y="Count") +
+      scale_fill_manual(name = "", labels = c("Not Present", "Present"),values = c("firebrick1", "olivedrab1"))
   })
   
   # severity pie chart
@@ -336,15 +375,15 @@ server <- function(input, output, session) {
     by.year <- sev %>% group_by(year) %>% summarise(sum(count))
     sev <- left_join(sev, by.year, by="year")
     sev$per <- sev$count/sev$`sum(count)`
-    sev$label <- percent(sev$per, accuracy = 0.1)
+    sev$label <- percent(sev$per, accuracy = 0.01)
     
     data <- sev[sev$year == input$year,]
     ggplot(data) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
       labs(title = "Severity of Accidents by Percentage", fill = "Severity Level") +
-      theme_economist_white() +
-      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 1) +
+      theme_economist() +
+      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 2) +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
             axis.text.y=element_blank(),
@@ -407,32 +446,32 @@ server <- function(input, output, session) {
   
   # county
   output$county <- output$county2 <- renderValueBox({
-    valueBox(input$county, paste("Accidents in", input$year),  icon = icon("map-marker"))
+    valueBox(input$county, paste("Accidents in", input$year),  icon = icon("map-marker"), color = "navy")
   })
   
   # no.accidents output
   output$no.accidents <- output$no.accidents2 <- renderInfoBox({
-    infoBox("Accidents", data1[data1$County==input$county & data1$year == input$year,"no.accidents"], icon = icon("users"))
+    infoBox("Accidents", data1[data1$County==input$county & data1$year == input$year,"no.accidents"], icon = icon("users"), color = "navy")
   })
   
   # population output
   output$population <- output$population2 <-renderInfoBox({
-    infoBox("Population", data1[data1$County==input$county & data1$year == input$year,"total.pop"], icon = icon("users"))
+    infoBox("Population", data1[data1$County==input$county & data1$year == input$year,"total.pop"], icon = icon("users"), color = "navy")
   })
   
   # vehicle output
   output$vehicles <- output$vehicles2 <- renderInfoBox({
-    infoBox("Registered Vehicles", data1[data1$County==input$county & data1$year == input$year,"total.veh"], icon = icon("users"))
+    infoBox("Registered Vehicles", data1[data1$County==input$county & data1$year == input$year,"total.veh"], icon = icon("users"), color = "navy")
   })
   
   # popaccidentrate output
   output$popaccidentrate <- output$popaccidentrate2 <- renderInfoBox({
-    infoBox("Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1000 people") )
+    infoBox("Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"pop.rate"]),"/1000 people") , color = "navy")
   })
   
   # vehaccidentrate output
   output$vehaccidentrate <- output$vehaccidentrate2 <- renderInfoBox({
-    infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1000 vehicles"))
+    infoBox("Vehicle Accident Rate", paste0(ceiling(data1[data1$County==input$county & data1$year == input$year,"veh.rate"]),"/1000 vehicles"), color = "navy")
   })
   
   # leaflet
@@ -506,8 +545,7 @@ server <- function(input, output, session) {
     ggplot(data[data$County==input$county & !is.na(data$Weather_Type),], aes(x=Weather_Type, fill=as.character(Severity))) + 
       geom_bar(position = "dodge") +
       labs(x="Weather Condition", y="Count", fill="Severity Level") +
-      theme_economist_white() + 
-      theme(axis.text.x = element_text(angle = 90)) +
+      theme_economist() + 
       scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
@@ -520,8 +558,7 @@ server <- function(input, output, session) {
     ggplot(data[data$County==input$county & !is.na(data$Weather_Type),], aes(x=Weather_Type, fill=as.character(Severity))) + 
       geom_bar(position = "fill") +
       labs(x="Weather Condition", y="Proportion", fill="Severity Level") +
-      theme_economist_white() + 
-      theme(axis.text.x = element_text(angle = 90)) +
+      theme_economist() +
       scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
@@ -539,8 +576,9 @@ server <- function(input, output, session) {
       geom_bar(aes(x="Give_Way",y=..count.., fill=Give_Way), width=.3) + 
       geom_bar(aes(x="Traffic_Signal",y=..count.., fill=Traffic_Signal),width =.3) +
       geom_bar(aes(x="Traffic_Calming",y=..count.., fill=Traffic_Calming),width =.3) +
-      theme_economist_white() + 
-      theme(axis.text.x = element_text(angle = 90), axis.title.x = element_blank()) +
+      theme_economist() + 
+      theme(axis.title.x = element_blank()) +
+      labs(x="Road Condition", y="Count") +
       scale_fill_manual(name = "", labels = c("Not Present", "Present"), values = c("firebrick1", "olivedrab1"))
   })
   
@@ -557,15 +595,15 @@ server <- function(input, output, session) {
     by.year <- sev %>% group_by(year) %>% summarise(sum(count))
     sev <- left_join(sev, by.year, by="year")
     sev$per <- sev$count/sev$`sum(count)`
-    sev$label <- percent(sev$per, accuracy = 0.1)
+    sev$label <- percent(sev$per, accuracy = 0.01)
     data <- sev[sev$year == input$year,]
     data[is.na(data)] <-0
     ggplot(data) +
       geom_bar(aes(x="" ,y=per, fill=as.factor(Severity)), stat="identity") +
       coord_polar("y", start=0) +
       labs(title = "Severity of Accidents by Percentage", fill = "Severity Level") +
-      theme_economist_white() +
-      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 1) +
+      theme_economist() +
+      geom_text_repel(aes(x=1, y = cumsum(per) - per/2), label=data$label, nudge_x = 2) +
       theme(axis.line=element_blank(),
             axis.text.x=element_blank(),
             axis.text.y=element_blank(),
@@ -587,7 +625,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x = hour ,y = ..count.., fill = ..count..)) +
       scale_fill_gradient(low = "green", high = "red") +
       labs(x="Hour", y="Count") +
-      theme_economist_white() +
+      theme_economist() +
       theme(legend.position = "none")
   })
   
@@ -602,10 +640,10 @@ server <- function(input, output, session) {
     }
     ggplot(data=data[data$County==input$county,]) + 
       geom_bar(aes(x = day ,y = ..count../df77$total , fill = as.character(ph))) +
-      labs(x = "", y="Average number of accidents per day") +
+      labs(x = "", y="Average No. of Accidents Per Day") +
       labs(fill = "Public Holiday") +
       scale_fill_manual(labels = c("0", "1"),values = c("firebrick1", "olivedrab1")) +
-      theme_economist_white()
+      theme_economist()
   })
   
   
@@ -620,8 +658,8 @@ server <- function(input, output, session) {
     ggplot(data=data[data$County==input$county,]) + 
       geom_bar(aes(x = typeDay ,y = ..count../df88$total , fill = ..count../df88$total)) +
       scale_fill_gradient(low = "green", high = "red") +
-      labs(x = "", y="Average number of accidents per day") +
-      theme_economist_white() + 
+      labs(x = "", y="Average No. of Accidents Per Day") +
+      theme_economist() + 
       theme(legend.position = "none")
   })
   
@@ -635,7 +673,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x = month ,y = ..count.., fill = ..count..)) +
       labs(x="Month", y="Count") +
       scale_fill_gradient(low = "green", high = "red") +
-      theme_economist_white() + 
+      theme_economist() + 
       theme(legend.position = "none")
   })
   
@@ -643,8 +681,9 @@ server <- function(input, output, session) {
   output$age_groups <- renderPlot({
     ggplot(data2 %>% filter(CTYNAME == input$county & !is.na(AGESTATUS)), aes(x=AGESTATUS, y= TOT_POP, fill = AGESTATUS))+
       geom_bar(stat="identity") +
-      labs(x = "Age group", y= "Population") + 
-      theme(legend.position = "none")
+      labs(x = "Age Group", y= "Population", fill = "Age Group") + 
+      theme(legend.position = "none") +
+      theme_economist()
   })
   
   #Gender demographics
@@ -652,7 +691,8 @@ server <- function(input, output, session) {
     ggplot(data2 %>% filter(CTYNAME == input$county) %>% summarise(total_male = sum(TOT_MALE), total_female = sum(TOT_FEMALE))) +
       geom_bar(aes(x="Male",y=total_male), width=.3, stat = "identity", fill = "blue") +
       geom_bar(aes(x="Female",y=total_female), width=.3, stat = "identity", fill = "red") +
-      labs(x="Gender", y="Population")
+      labs(x="Gender", y="Population") +
+      theme_economist()
   })
   
   #city plot
@@ -666,6 +706,7 @@ server <- function(input, output, session) {
       geom_bar(aes(x=City, y=..count.., fill = ..count..)) + 
       labs(x="City", y="Count") +      
       scale_fill_gradient(low = "green", high = "red") +
+      theme_economist() +
       theme(axis.text.x=element_text(angle=90), legend.position = "none")
   })
   
