@@ -524,6 +524,7 @@ server <- function(input, output, session) {
       scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
+  
   # road safety boxplot
   output$road_safety <- renderPlot({
     if (input$year != "2016-2019"){
