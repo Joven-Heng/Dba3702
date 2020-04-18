@@ -35,6 +35,7 @@ data1<- gather(data1,`2016`,`2017`,`2018`,`2019`,`2016-2019`, key = "year", valu
 
 cal.county.pop <- read.csv("california_county_population.csv")
 county.pop <- cal.county.pop %>% group_by(CTYNAME) %>% summarise(pop = sum(TOT_POP))
+county.pop <- county.pop %>% mutate(pop = pop/2)
 data1 <- left_join(data1,county.pop, by=c("County"="CTYNAME"))
 data1 <- data1 %>% mutate(pop.rate = count*1000/pop)
 #data1 <- data1[order(data1$pop.rate, decreasing = T),]
