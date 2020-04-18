@@ -351,7 +351,7 @@ server <- function(input, output, session) {
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
             panel.grid.major=element_blank())+
-      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
  
@@ -507,7 +507,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Count", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
   output$weather_relative <- renderPlot({
@@ -521,7 +521,7 @@ server <- function(input, output, session) {
       labs(x="Weather Condition", y="Proportion", fill="Severity Level") +
       theme_economist_white() + 
       theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
   # road safety boxplot
@@ -571,7 +571,7 @@ server <- function(input, output, session) {
             axis.title.x=element_blank(),
             axis.title.y=element_blank(),
             panel.grid.major=element_blank())+
-      scale_fill_manual(values = c("olivedrab1", "lightgoldenrod1", "darkorange", "firebrick1"))
+      scale_fill_manual(values = c("1"= "olivedrab1", "2"="lightgoldenrod1", "3"="darkorange", "4"="firebrick1"))
   })
   
   # time series plot
