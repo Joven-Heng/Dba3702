@@ -166,7 +166,7 @@ sidebar <- dashboardSidebar(
     
     selectInput(inputId = "year", label = "Year", choices = c("2016-2019", "2016", "2017","2018","2019")),
     
-    selectInput(inputId = "county", label = "County", choices = unique(CA$County))
+    selectInput(inputId = "county", label = "County", choices = sort(unique(CA$County)))
     
   )
 )
