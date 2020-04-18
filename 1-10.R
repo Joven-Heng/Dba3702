@@ -674,9 +674,11 @@ server <- function(input, output, session) {
       data <- df91 %>% mutate(rate = accidents/total)
     }
     ggplot(data=data) + 
-      geom_bar(aes(x = day ,y = rate),fill = "firebrick1", stat = "identity") +
+      geom_bar(aes(x = day ,y = rate, fill = rate), stat = "identity") +
       labs(x = "", y="Average No. of Accidents Per Day") +
-      theme_economist()
+      scale_fill_gradient(low = "green", high = "red") +
+      theme_economist() +
+      theme(legend.position = "none")
   })
   
   output$daySummary <- renderPlot({
