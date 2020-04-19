@@ -201,8 +201,8 @@ body <- dashboardBody(
               tabBox(
                 id = "Overviews",
                 width = 8,
-                tabPanel("Population Statistics", DT::dataTableOutput("overviewTable")),
-                tabPanel("Accident Rate Ranked by County", DT::dataTableOutput("rankdatatable"))
+                tabPanel("Accident Rate Ranked by County", DT::dataTableOutput("rankdatatable")),
+                tabPanel("Population Statistics", DT::dataTableOutput("overviewTable"))                
               )
             )
             
