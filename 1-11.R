@@ -197,8 +197,8 @@ body <- dashboardBody(
                 id = "things",
                 width = 4,
                 height = 500,
-                tabPanel("Accident Road Conditions", plotOutput("plot2")),
-                tabPanel("Accident Severity Levels", plotOutput("plot3"))
+                tabPanel("Road Conditions", plotOutput("plot2")),
+                tabPanel("Severity Levels", plotOutput("plot3"))
               ),
               tabBox(
                 id = "Overviews",
