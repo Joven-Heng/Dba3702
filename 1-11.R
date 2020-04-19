@@ -140,6 +140,7 @@ body <- dashboardBody(
                                 /* logo */
                                 .skin-blue .main-header .logo {
                                 background-color: #00334e;
+                                position: fixed
                                 }
                                 /* logo when hovered */
                                 .skin-blue .main-header .logo:hover {
@@ -152,6 +153,7 @@ body <- dashboardBody(
                                 /* main sidebar */
                                 .skin-blue .main-sidebar {
                                 background-color: #145374;
+                                position: fixed
                                 }
                                 /* active selected tab in the sidebarmenu */
                                 .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
