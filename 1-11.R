@@ -574,6 +574,12 @@ server <- function(input, output, session) {
     # severity percentage
     sev <- data13 %>% group_by(Severity, year) %>% summarise(count = n())
     sev <- spread(sev, year, count)
+    for (i in c("2016", "2017", "2018","2019")){
+      if (!(i %in% colnames(sev))){
+        sev$i <- NA
+        colnames(sev)[ncol(sev)]<- i 
+      }
+    }
     sev[is.na(sev)] <-0
     sev <- sev %>% mutate(`2016-2019` = `2016`+`2017`+`2018`+`2019`)
     sev <- gather(sev,`2016`,`2017`,`2018`,`2019`,`2016-2019`, key = "year", value = "count")
