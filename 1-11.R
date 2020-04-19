@@ -609,7 +609,7 @@ server <- function(input, output, session) {
       data <- CA
     }
     ggplot(data=data[data$County==input$county,]) +
-      geom_bar(aes(x = hour ,y = ..count.., fill = ..count..)) +
+      geom_bar(aes(x = as.factor(hour) ,y = ..count.., fill = ..count..)) +
       scale_fill_gradient(low = "green", high = "red") +
       labs(x="Hour", y="Average No. of Accidents") +
       theme_economist() +
