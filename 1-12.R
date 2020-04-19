@@ -139,7 +139,7 @@ body <- dashboardBody(
   tags$head(tags$style(HTML('
                                 /* logo */
                                 .skin-blue .main-header .logo {
-                                background-color: #00334e;
+                                background-color: #001F3F;
                                 position: fixed
                                 }
                                 /* logo when hovered */
@@ -148,7 +148,7 @@ body <- dashboardBody(
                                 }
                                 /* navbar (rest of the header) */
                                 .skin-blue .main-header .navbar {
-                                background-color: #00334e;
+                                background-color: #001F3F;
                                 }
                                 /* main sidebar */
                                 .skin-blue .main-sidebar {
@@ -174,7 +174,7 @@ body <- dashboardBody(
                                 }
                                 /* body */
                                 .content-wrapper, .right-side {
-                                background-color: #f3f9fb;
+                                background-color: #5588a3;
                                 }
                                 '))),
   
