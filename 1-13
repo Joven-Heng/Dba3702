@@ -18,9 +18,9 @@ library(googleway)
 library(stringr)
 library(ggmap)
 library(DT)
+key <- 'AIzaSyDhBLI5W7LFhoRLea-ZVMQQDytw2RBE98E'
 
-# only load once
-#CA <- read.csv("CA.csv")
+CA <- read.csv("CA.csv")
 
 # data consolidation
 data1 <- CA %>% group_by(County, year) %>% summarise(count=n())
@@ -323,8 +323,8 @@ server <- function(input, output, session) {
     return(list(
       src = "picture1.jpg",
       contentType = "image/jpeg",
-      height = 950,
-      width = 1550
+      height = 800,
+      width = 1400
     ))
   }, deleteFile = FALSE)
 
@@ -408,9 +408,7 @@ server <- function(input, output, session) {
   
   
   # distribution across counties
-  output$plot4 <- renderPlot({
-    key <- 'AIzaSyDhBLI5W7LFhoRLea-ZVMQQDytw2RBE98E'
-    
+  output$plot4 <- renderPlot({    
     world <- ne_countries(scale = "medium", returnclass = "sf")
     byCounty <- data1 %>% select(County, year, no.accidents) %>%
       filter(year==input$year)
