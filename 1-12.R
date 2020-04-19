@@ -391,7 +391,7 @@ server <- function(input, output, session) {
   
   # distribution across counties
   output$plot4 <- renderPlot({
-    key <- 'AIzaSyDhBLI5W7LFhoRLea-ZVMQQDytw2RBE98E'
+    key <- 'Insert Key'
     
     world <- ne_countries(scale = "medium", returnclass = "sf")
     byCounty <- data1 %>% select(County, year, no.accidents) %>%
