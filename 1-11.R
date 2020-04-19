@@ -622,7 +622,7 @@ server <- function(input, output, session) {
       data <- data[data$County==input$county,]
       df77 <- df %>% filter(year == input$year)
       df90 <- data %>% group_by(day) %>% summarise(accidents = n())
-      df91 <- right_join(df90, df, by = "day")
+      df91 <- right_join(df90, df77, by = "day")
       df91[is.na(df91)] <-0
       df91$accidents <- as.numeric(df91$accidents)
       data <- df91 %>% mutate(rate = accidents/count)
