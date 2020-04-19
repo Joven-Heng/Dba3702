@@ -637,6 +637,7 @@ server <- function(input, output, session) {
       df91$accidents <- as.numeric(df91$accidents)
       data <- df91 %>% mutate(rate = accidents/total)
     }
+    data$day <- factor(data$day, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
     ggplot(data=data) + 
       geom_bar(aes(x = day ,y = rate, fill = rate), stat = "identity") +
       labs(x = "", y="Average No. of Accidents Per Day") +
@@ -663,6 +664,7 @@ server <- function(input, output, session) {
       df86[is.na(df86)] <-0
       data <- df86 %>% mutate(rate = accidents/total)
     }
+    data$typeDay <- factor(data$typeDay, levels = c("Weekday", "Weekend","Public Holiday"))
     ggplot(data= data) + 
       geom_bar(aes(x = typeDay ,y = rate, fill = rate), stat= "identity") +
       scale_fill_gradient(low = "green", high = "red") +
@@ -677,6 +679,7 @@ server <- function(input, output, session) {
     }else{
       data <- CA
     }
+    data$month <- factor(data$month, levels = c("1","2","3","4","5","6","7","8","9","10","11", "12"))
     ggplot(data=data[data$County==input$county,]) +
       geom_bar(aes(x = month ,y = ..count.., fill = ..count..)) +
       labs(x="Month", y="Average No. of Accidents") +
