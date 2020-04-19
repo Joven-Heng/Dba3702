@@ -228,9 +228,9 @@ body <- dashboardBody(
             ),
             
             fluidRow(
+              infoBoxOutput("accidentrank"),
               infoBoxOutput("popaccidentrate"),
-              infoBoxOutput("vehaccidentrate"),
-              infoBoxOutput("accidentrank")
+              infoBoxOutput("vehaccidentrate")              
             ),
             
             #demographics
@@ -258,9 +258,9 @@ body <- dashboardBody(
             ),
             
             fluidRow(
+              infoBoxOutput("accidentrank2"),
               infoBoxOutput("popaccidentrate2"),
-              infoBoxOutput("vehaccidentrate2"),
-              infoBoxOutput("accidentrank2")
+              infoBoxOutput("vehaccidentrate2")              
             ),
             
             fluidRow(
